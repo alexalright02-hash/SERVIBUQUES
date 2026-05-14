@@ -194,8 +194,8 @@ input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:var(--te
 <!-- PDF -->
 <div id="pdf-area">
   <div class="pdf-btns">
-    <button class="pdf-btn pdf-btn-close" onclick="closePDF()">✕ CERRAR</button>
-    <button class="pdf-btn pdf-btn-wa" id="btn-wa" onclick="compartirPDF()">📲 ENVIAR A WHATSAPP</button>
+    <button class="pdf-btn pdf-btn-close" id="btn-close-pdf">✕ CERRAR</button>
+    <button class="pdf-btn pdf-btn-wa" id="btn-wa">📲 ENVIAR A WHATSAPP</button>
     <span id="pdf-msg"></span>
   </div>
   <div id="pdf-render"></div>
@@ -1366,6 +1366,53 @@ window.generarPDF=(cli,per,incM,incE,incA,incB,incV,incP,incAR)=>{
   document.body.style.overflow='hidden';
   document.getElementById('pdf-msg').textContent='';
 };
+
+// ── PDF CLOSE & SHARE ──
+function closePDF(){
+  document.getElementById('pdf-area').style.display='none';
+  document.body.style.overflow='';
+}
+async function compartirPDF(){
+  const btn=document.getElementById('btn-wa');
+  const msg=document.getElementById('pdf-msg');
+  const el=document.getElementById('pdf-render');
+  if(!btn||!el)return;
+  btn.textContent='⏳ GENERANDO...';btn.disabled=true;
+  if(msg)msg.textContent='CONVIRTIENDO A IMAGEN...';
+  try{
+    const canvas=await html2canvas(el,{scale:2,backgroundColor:'#ffffff',useCORS:true,logging:false,width:el.scrollWidth,height:el.scrollHeight,windowWidth:el.scrollWidth});
+    canvas.toBlob(async blob=>{
+      if(!blob){throw new Error('Sin imagen');}
+      const file=new File([blob],'servibuques-cuenta.png',{type:'image/png'});
+      if(navigator.canShare&&navigator.canShare({files:[file]})){
+        try{
+          await navigator.share({files:[file],title:'CUENTA DE COBRO — SERVIBUQUES'});
+          if(msg)msg.textContent='✓ COMPARTIDO';
+        }catch(e){
+          if(e.name!=='AbortError'){descargarImg(canvas);if(msg)msg.textContent='IMAGEN DESCARGADA — ADJÚNTALA EN WHATSAPP';}
+        }
+      }else{
+        descargarImg(canvas);
+        setTimeout(()=>window.open('https://wa.me/','_blank'),800);
+        if(msg)msg.textContent='IMAGEN DESCARGADA — ADJÚNTALA EN WHATSAPP';
+      }
+      btn.textContent='📲 ENVIAR A WHATSAPP';btn.disabled=false;
+    },'image/png',0.95);
+  }catch(e){
+    btn.textContent='📲 ENVIAR A WHATSAPP';btn.disabled=false;
+    if(msg)msg.textContent='ERROR: '+e.message;
+  }
+}
+function descargarImg(canvas){
+  const a=document.createElement('a');
+  a.download='servibuques-cuenta.png';
+  a.href=canvas.toDataURL('image/png');
+  a.click();
+}
+
+// Wire PDF buttons via event listeners (required for ES modules)
+document.getElementById('btn-close-pdf').addEventListener('click',closePDF);
+document.getElementById('btn-wa').addEventListener('click',compartirPDF);
 
 // ── FACTURA CLIENTS ──
 function renderFacturaClients(){
