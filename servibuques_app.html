@@ -580,11 +580,12 @@ function startListeners(){
   });
   // Config listener
   const unsubCfg=onSnapshot(collection(db,'_config'),snap=>{
+    let changed=false;
     snap.docs.forEach(d=>{
-      if(d.id==='embarcaciones'&&d.data().lista)CFG.embarcaciones=d.data().lista;
-      if(d.id==='usuarios'&&d.data().lista)CFG.usuarios=d.data().lista;
+      if(d.id==='embarcaciones'&&d.data().lista&&d.data().lista.length>0){CFG.embarcaciones=d.data().lista;changed=true;}
+      if(d.id==='usuarios'&&d.data().lista&&d.data().lista.length>0){CFG.usuarios=d.data().lista;changed=true;}
     });
-    populateUsers();renderAll();
+    if(changed){populateUsers();renderAll();}
   });
   unsubscribers.push(unsubCfg);
 }
@@ -1366,6 +1367,18 @@ window.generarPDF=(cli,per,incM,incE,incA,incB,incV,incP,incAR)=>{
   document.getElementById('pdf-msg').textContent='';
 };
 
+// ── FACTURA CLIENTS ──
+function renderFacturaClients(){
+  const s=document.getElementById('f-cli');
+  if(!s)return;
+  const cur=s.value;
+  const cs=new Set();
+  CFG.embarcaciones.forEach(e=>cs.add(e));
+  Object.values(DB).forEach(a=>Array.isArray(a)&&a.forEach(r=>r.cliente&&cs.add(r.cliente)));
+  s.innerHTML='<option value="">— TODOS —</option>';
+  [...cs].sort().forEach(c=>s.innerHTML+=`<option value="${c}"${c===cur?' selected':''}>${c}</option>`);
+}
+
 // ── RENDER ALL ──
 function renderAll(){
   renderDashboard();renderMuellaje();renderEnergia();renderAgua();
@@ -1396,10 +1409,20 @@ populateUsers();setSynced();
 
 (async()=>{
   try{
+    // Load config from Firebase
     const embDoc=await getDoc(doc(db,'_config','embarcaciones'));
-    if(embDoc.exists()&&embDoc.data().lista)CFG.embarcaciones=embDoc.data().lista;
+    if(embDoc.exists()&&embDoc.data().lista&&embDoc.data().lista.length>0){
+      CFG.embarcaciones=embDoc.data().lista;
+    } else {
+      // First time — save defaults to Firebase
+      await setDoc(doc(db,'_config','embarcaciones'),{lista:CFG.embarcaciones});
+    }
     const usrDoc=await getDoc(doc(db,'_config','usuarios'));
-    if(usrDoc.exists()&&usrDoc.data().lista)CFG.usuarios=usrDoc.data().lista;
+    if(usrDoc.exists()&&usrDoc.data().lista&&usrDoc.data().lista.length>0){
+      CFG.usuarios=usrDoc.data().lista;
+    } else {
+      await setDoc(doc(db,'_config','usuarios'),{lista:CFG.usuarios});
+    }
     populateUsers();
   }catch(e){console.warn('offline init',e);setOffline();}
 })();
