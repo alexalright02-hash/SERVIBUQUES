@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#1E3A5F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="SERVIBUQUES">
+<link rel="manifest" id="pwa-manifest">
+<title>SERVIBUQUES</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F0F4F8;--bg2:#E2E8F0;--card:#FFFFFF;--border:#CBD5E1;--navy:#1E3A5F;--teal:#0891B2;--teal2:#0E7490;--green:#059669;--red:#DC2626;--amber:#D97706;--muted:#64748B;--text:#0F172A;--text2:#334155;}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{font-size:14px;color-scheme:light only;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;text-transform:uppercase;}
+@media(prefers-color-scheme:dark){
+  :root{--bg:#F0F4F8;--bg2:#E2E8F0;--card:#FFFFFF;--border:#CBD5E1;--navy:#1E3A5F;--teal:#0891B2;--teal2:#0E7490;--green:#059669;--red:#DC2626;--amber:#D97706;--muted:#64748B;--text:#0F172A;--text2:#334155;}
+  body{background:#F0F4F8!important;color:#0F172A!important;}
+}
+input,textarea,select{text-transform:uppercase!important;}
+input::placeholder{text-transform:uppercase;}
+
+/* SYNC INDICATOR */
+#sync-bar{position:fixed;top:0;left:0;right:0;height:3px;background:var(--teal);z-index:9998;transform:scaleX(0);transform-origin:left;transition:transform .3s;}
+#sync-bar.loading{transform:scaleX(0.7);}
+#sync-bar.done{transform:scaleX(1);transition:transform .1s;}
+
+/* LOGIN */
+#login-screen{position:fixed;inset:0;background:var(--navy);z-index:9999;display:flex;align-items:center;justify-content:center;}
+.login-box{background:white;border-radius:16px;padding:36px;width:320px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.4);}
+.login-logo{font-family:'Bebas Neue',cursive;font-size:28px;letter-spacing:4px;color:var(--teal);margin-bottom:2px;}
+.login-sub{font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:6px;}
+.login-sync{font-size:10px;color:var(--green);font-weight:700;margin-bottom:18px;}
+.login-box select,.login-box input{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--text);margin-bottom:12px;outline:none;background:#F8FAFC;}
+.login-box select:focus,.login-box input:focus{border-color:var(--teal);}
+.login-btn{width:100%;background:var(--teal);color:white;border:none;border-radius:8px;padding:11px;font-size:13px;font-weight:700;letter-spacing:1px;cursor:pointer;}
+.login-btn:hover{background:var(--teal2);}
+.login-err{color:var(--red);font-size:11px;margin-top:8px;min-height:14px;}
+.role-badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:9px;font-weight:700;letter-spacing:1px;}
+.role-admin{background:#FEF3C7;color:#92400E;border:1px solid #F59E0B;}
+.role-user{background:#DBEAFE;color:#1E40AF;border:1px solid #93C5FD;}
+
+/* HEADER */
+header{position:sticky;top:0;z-index:100;background:var(--navy);padding:0 14px;display:flex;align-items:center;justify-content:space-between;height:52px;box-shadow:0 2px 8px rgba(0,0,0,0.2);}
+.logo{font-family:'Bebas Neue',cursive;font-size:21px;letter-spacing:3px;color:white;display:flex;align-items:center;gap:7px;}
+.logo em{color:#67E8F9;font-style:normal;}
+.header-right{display:flex;align-items:center;gap:8px;}
+.header-user{font-size:10px;color:#94A3B8;text-align:right;line-height:1.5;}
+.header-user b{color:#67E8F9;}
+.btn-logout{font-size:10px;background:transparent;border:1px solid rgba(239,68,68,0.5);color:#FCA5A5;border-radius:5px;padding:4px 9px;cursor:pointer;}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:#6B7280;flex-shrink:0;}
+.sync-dot.online{background:#22C55E;box-shadow:0 0 6px #22C55E;}
+.sync-dot.syncing{background:var(--amber);animation:pulse .8s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+/* NAV */
+nav{background:white;border-bottom:2px solid var(--border);display:flex;overflow-x:auto;position:sticky;top:52px;z-index:90;box-shadow:0 1px 4px rgba(0,0,0,0.08);}
+nav::-webkit-scrollbar{display:none;}
+.tab{font-size:10px;font-weight:700;letter-spacing:1.5px;padding:0 13px;height:42px;border:none;background:none;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;transition:all .2s;display:flex;align-items:center;gap:5px;}
+.tab:hover{color:var(--text);}
+.tab.active{color:var(--teal);border-bottom-color:var(--teal);background:#F0F9FF;}
+.tab .badge{background:var(--teal);color:white;border-radius:10px;padding:1px 6px;font-size:9px;font-weight:700;}
+
+/* MAIN */
+main{padding:14px;max-width:100%;}
+.section{display:none;}.section.active{display:block;}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:nowrap;gap:12px;}
+.section-title{font-family:Georgia,'Times New Roman',serif;font-size:17px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:8px;white-space:nowrap;}
+.section-title::before{content:'';width:4px;height:18px;background:var(--teal);border-radius:2px;flex-shrink:0;}
+
+/* DASHBOARD */
+.dash-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px;}
+@media(min-width:600px){.dash-grid{grid-template-columns:repeat(3,1fr);}}
+@media(min-width:900px){.dash-grid{grid-template-columns:repeat(5,1fr);}}
+.stat-card{background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:14px;position:relative;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.05);}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--teal);}
+.stat-label{font-size:9px;letter-spacing:1.5px;color:var(--muted);margin-bottom:6px;font-weight:600;}
+.stat-value{font-family:'Bebas Neue',cursive;font-size:32px;color:var(--navy);line-height:1;}
+.stat-sub{font-size:10px;color:var(--muted);margin-top:2px;}
+
+/* CARD / TABLE */
+.card{background:var(--card);border:1.5px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,0.05);}
+.table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+table{width:100%;border-collapse:collapse;min-width:480px;}
+thead tr{background:#F1F5F9;}
+th{font-size:8px;letter-spacing:2px;color:var(--teal2);font-weight:700;padding:9px 11px;text-align:left;border-bottom:1.5px solid var(--border);white-space:nowrap;}
+td{padding:8px 11px;color:var(--text2);border-bottom:1px solid var(--bg2);vertical-align:middle;font-size:12px;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover{background:#F8FAFC;}
+
+/* BADGES */
+.bs{font-size:9px;font-weight:700;padding:2px 8px;border-radius:12px;display:inline-block;letter-spacing:.5px;white-space:nowrap;}
+.bg-green{background:#D1FAE5;color:#065F46;border:1px solid #6EE7B7;}
+.bg-amber{background:#FEF3C7;color:#78350F;border:1px solid #FCD34D;}
+.bg-red{background:#FEE2E2;color:#7F1D1D;border:1px solid #FCA5A5;}
+.bg-teal{background:#CFFAFE;color:#155E75;border:1px solid #67E8F9;}
+.bg-gray{background:#F1F5F9;color:#475569;border:1px solid #CBD5E1;}
+.bg-blue{background:#DBEAFE;color:#1E3A8A;border:1px solid #93C5FD;}
+
+/* BUTTONS */
+.btn{font-size:11px;font-weight:700;letter-spacing:1px;padding:8px 15px;border-radius:7px;border:none;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:5px;}
+.btn-primary{background:var(--teal);color:white;}
+.btn-primary:hover{background:var(--teal2);}
+.btn-secondary{background:white;color:var(--muted);border:1.5px solid var(--border);}
+.btn-sm{padding:3px 8px;font-size:9px;}
+.btn-edit{background:#FEF3C7;color:#92400E;border:1px solid #FCD34D;}
+.btn-del{background:#FEE2E2;color:#991B1B;border:1px solid #FCA5A5;}
+.btn-pdf{background:#EDE9FE;color:#4C1D95;border:1px solid #C4B5FD;}
+.btn-row{display:flex;gap:4px;align-items:center;}
+
+/* FORM */
+.field{margin-bottom:4px;}
+.field label{display:block;font-size:9px;font-weight:700;letter-spacing:1.5px;color:var(--muted);margin-bottom:4px;}
+.field input,.field select,.field textarea{width:100%;border:1.5px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;outline:none;background:white;transition:border-color .15s;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(8,145,178,0.1);}
+.field textarea{resize:vertical;min-height:58px;}
+.field-note{font-size:10px;color:var(--amber);margin-top:3px;font-weight:600;}
+.tarifa-fixed{background:#F0F9FF;border:1.5px solid #BAE6FD;border-radius:7px;padding:8px 10px;font-size:13px;color:var(--teal2);font-weight:700;}
+.form-grid{display:grid;gap:11px;margin-bottom:14px;}
+.g2{grid-template-columns:1fr 1fr;}
+.g3{grid-template-columns:1fr 1fr 1fr;}
+@media(max-width:480px){.g2,.g3{grid-template-columns:1fr;}}
+
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);z-index:500;align-items:flex-start;justify-content:center;overflow-y:auto;padding:16px 12px;}
+.modal-bg.open{display:flex;}
+.modal{background:white;border-radius:14px;padding:20px;width:100%;max-width:520px;margin:auto;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.modal-title{font-family:Georgia,serif;font-size:17px;font-weight:700;color:var(--navy);margin-bottom:16px;}
+.modal-actions{display:flex;gap:8px;margin-top:16px;justify-content:flex-end;flex-wrap:wrap;}
+
+/* ALERTS */
+.alert{position:fixed;bottom:14px;left:50%;transform:translateX(-50%) translateY(100px);z-index:9000;background:var(--navy);color:white;border-radius:10px;padding:11px 18px;font-size:12px;font-weight:600;letter-spacing:.5px;max-width:92vw;transition:transform .3s;box-shadow:0 8px 24px rgba(0,0,0,0.3);text-align:center;}
+.alert.show{transform:translateX(-50%) translateY(0);}
+.alert.err{background:var(--red);}
+.alert.ok{background:var(--green);}
+.alert.warn{background:var(--amber);}
+
+/* MISC */
+.warn-box{background:#FFFBEB;border:1.5px solid #FCD34D;border-radius:8px;padding:9px 13px;font-size:11px;color:#78350F;font-weight:600;margin-bottom:10px;}
+.mono{font-family:monospace;}
+.muted{color:var(--muted);}
+.val-ok{color:var(--teal2);font-weight:700;}
+.empty-state{text-align:center;padding:32px;color:var(--muted);}
+.empty-state .ico{font-size:26px;margin-bottom:8px;}
+.empty-state p{font-size:11px;letter-spacing:1px;}
+.admin-only{display:none;}
+.photo-preview{width:72px;height:54px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;}
+
+/* FACTURA */
+.factura-panel{background:#F0F9FF;border:2px solid var(--teal);border-radius:12px;padding:18px;margin-top:12px;}
+.frow{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.frow:last-child{border-bottom:none;}
+.ftotal{font-family:'Bebas Neue',cursive;font-size:28px;color:var(--teal2);}
+
+/* FILTER & BULK */
+.filter-row{display:flex;gap:8px;padding:8px 11px;background:#F8FAFC;border-bottom:1px solid var(--border);flex-wrap:wrap;align-items:center;}
+.filter-row select{border:1px solid var(--border);border-radius:5px;padding:4px 7px;font-size:10px;color:var(--text);background:white;font-weight:600;}
+.bulk-bar{display:none;align-items:center;gap:8px;padding:8px 11px;background:#FEF3C7;border-bottom:1px solid #FCD34D;font-size:11px;font-weight:700;color:#78350F;}
+.bulk-bar.visible{display:flex;}
+input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:var(--teal);}
+.photo-preview{width:72px;height:54px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;}
+
+/* PDF */
+#pdf-area{display:none;position:fixed;inset:0;background:#e5e7eb;z-index:8000;overflow-y:auto;padding:58px 10px 24px;}
+#pdf-render{background:white;max-width:680px;margin:0 auto;padding:24px 24px 32px;font-family:'Inter',sans-serif;color:#000;box-shadow:0 4px 24px rgba(0,0,0,0.12);}
+.pdf-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;border-bottom:2px solid #000;padding-bottom:10px;}
+.pdf-logo{font-size:19px;font-weight:900;letter-spacing:2px;}
+.pdf-tipo{font-size:12px;font-weight:700;border:2px solid #000;padding:3px 10px;border-radius:4px;}
+.pdf-client-box{border:1px solid #ccc;border-radius:5px;padding:9px 12px;margin-bottom:12px;display:grid;grid-template-columns:1fr 1fr;gap:5px;font-size:11px;}
+.pdf-client-box .lbl{font-size:8px;font-weight:700;letter-spacing:1px;color:#666;margin-bottom:1px;}
+.pdf-client-box .val{font-size:12px;font-weight:700;}
+.pdf-sec-title{font-weight:800;font-size:10px;letter-spacing:1px;margin-bottom:3px;margin-top:12px;color:#1E3A5F;border-left:3px solid #1E3A5F;padding-left:6px;}
+.pdf-table{width:100%;border-collapse:collapse;margin-bottom:8px;font-size:10px;}
+.pdf-table th{border:1px solid #1E3A5F;color:#1E3A5F;background:none;padding:5px 8px;text-align:left;font-size:9px;letter-spacing:.5px;}
+.pdf-table td{padding:4px 8px;border-bottom:1px solid #e2e8f0;vertical-align:top;}
+.pdf-table tfoot td{font-weight:700;border-top:1.5px solid #1E3A5F;border-bottom:none;}
+.pdf-grand{display:flex;justify-content:space-between;padding:8px 0;border-top:2px solid #000;font-size:16px;font-weight:900;margin-top:12px;}
+.pdf-btns{position:fixed;top:0;left:0;right:0;background:#1E3A5F;padding:8px 12px;display:flex;gap:8px;z-index:8001;align-items:center;}
+.pdf-btn{border:none;border-radius:7px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;}
+.pdf-btn-wa{background:#25D366;color:white;}
+.pdf-btn-close{background:#DC2626;color:white;}
+#pdf-msg{font-size:10px;color:#94A3B8;margin-left:4px;}
+
+/* NOTIF BANNER */
+#notif-banner{display:none;position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:var(--navy);color:white;border-radius:12px;padding:12px 18px;font-size:12px;font-weight:600;z-index:400;box-shadow:0 8px 24px rgba(0,0,0,0.3);text-align:center;max-width:90vw;}
+#notif-banner button{background:var(--teal);color:white;border:none;border-radius:6px;padding:5px 12px;margin-top:8px;font-size:11px;font-weight:700;cursor:pointer;display:block;width:100%;}
+</style>
+</head>
+<body>
+<div id="sync-bar"></div>
+
+<!-- PDF -->
+<div id="pdf-area">
+  <div class="pdf-btns">
+    <button class="pdf-btn pdf-btn-close" onclick="closePDF()">✕ CERRAR</button>
+    <button class="pdf-btn pdf-btn-wa" id="btn-wa" onclick="compartirPDF()">📲 ENVIAR A WHATSAPP</button>
+    <span id="pdf-msg"></span>
+  </div>
+  <div id="pdf-render"></div>
+</div>
+
+<!-- NOTIF BANNER -->
+<div id="notif-banner">
+  📲 ACTIVAR NOTIFICACIONES PARA RECIBIR ALERTAS DE NUEVOS REGISTROS
+  <button onclick="pedirNotificaciones()">ACTIVAR NOTIFICACIONES</button>
+</div>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">⚓ SERVIBUQUES</div>
+    <div class="login-sub">CONTROL DE MUELLE · BUENAVENTURA</div>
+    <div class="login-sync" id="login-sync-status">● CONECTANDO...</div>
+    <select id="li-user"><option value="">— SELECCIONAR USUARIO —</option></select>
+    <div id="li-pass-wrap">
+      <input type="password" id="li-pass" placeholder="CONTRASEÑA" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="login-btn" onclick="doLogin()">INGRESAR →</button>
+    <div class="login-err" id="li-err"></div>
+  </div>
+</div>
+
+<div class="alert" id="toast"></div>
+<div class="modal-bg" id="modal-bg" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modal-body"></div>
+</div>
+
+<header>
+  <div class="logo">⚓ SERVI<em>BUQUES</em></div>
+  <div class="header-right">
+    <div class="sync-dot" id="sync-dot" title="ESTADO DE CONEXIÓN"></div>
+    <div class="header-user"><span id="h-role"></span><br><b id="h-name">—</b></div>
+    <button class="btn-logout" onclick="doLogout()">SALIR</button>
+  </div>
+</header>
+
+<nav>
+  <button class="tab active" onclick="showTab('dashboard')">📊 INICIO</button>
+  <button class="tab" onclick="showTab('muellaje')">⚓ MUELLAJE <span class="badge" id="cnt-m">0</span></button>
+  <button class="tab" onclick="showTab('energia')">⚡ ENERGÍA <span class="badge" id="cnt-e">0</span></button>
+  <button class="tab" onclick="showTab('agua')">💧 AGUA <span class="badge" id="cnt-a">0</span></button>
+  <button class="tab" onclick="showTab('bodegaje')">📦 BODEGA <span class="badge" id="cnt-b">0</span></button>
+  <button class="tab" onclick="showTab('vehiculos')">🚗 VEHÍCULOS <span class="badge" id="cnt-v">0</span></button>
+  <button class="tab" onclick="showTab('playa')">🏖️ PLAYA <span class="badge" id="cnt-p">0</span></button>
+  <button class="tab" onclick="showTab('arriendos')">🏢 ARRIENDOS <span class="badge" id="cnt-ar">0</span></button>
+  <button class="tab admin-only" onclick="showTab('factura')">🧾 FACTURAR</button>
+  <button class="tab admin-only" onclick="showTab('admin')">⚙️ ADMIN</button>
+</nav>
+
+<main>
+<div class="section active" id="sec-dashboard">
+  <div class="dash-grid">
+    <div class="stat-card"><div class="stat-label">⚓ ATRACADAS</div><div class="stat-value" id="s-atrac">0</div><div class="stat-sub">EN MUELLE AHORA</div></div>
+    <div class="stat-card"><div class="stat-label">⚡ ENERGÍA ACTIVA</div><div class="stat-value" id="s-energ">0</div><div class="stat-sub">CONEXIONES VIVAS</div></div>
+    <div class="stat-card"><div class="stat-label">📦 BODEGA</div><div class="stat-value" id="s-bodeg">0</div><div class="stat-sub">ITEMS ACTIVOS</div></div>
+    <div class="stat-card"><div class="stat-label">🚗 VEHÍCULOS HOY</div><div class="stat-value" id="s-vehi">0</div><div class="stat-sub">INGRESOS DEL DÍA</div></div>
+    <div class="stat-card" style="border-color:var(--green)"><div class="stat-label">💰 TOTAL FACTURABLE</div><div class="stat-value" id="s-total" style="font-size:20px;color:var(--green)">$0</div><div class="stat-sub">PENDIENTE COBRO</div></div>
+  </div>
+  <div class="section-header"><div class="section-title">ACTIVIDAD RECIENTE</div></div>
+  <div class="card"><div class="table-scroll"><table>
+    <thead><tr><th>MÓDULO</th><th>CLIENTE</th><th>EVENTO</th><th>FECHA · HORA</th><th>USUARIO</th></tr></thead>
+    <tbody id="dash-tbody"></tbody>
+  </table></div></div>
+</div>
+
+<div class="section" id="sec-muellaje">
+  <div class="section-header"><div class="section-title">MUELLAJE</div><button class="btn btn-primary" onclick="openMuellaje()">+ NUEVO</button></div>
+  <div class="card">
+    <div class="bulk-bar" id="bulk-muellaje">
+      <span id="bulk-cnt-muellaje">0 SELECCIONADOS</span>
+      <button class="btn btn-sm btn-del" onclick="bulkDel('muellaje')">🗑️ ELIMINAR SELECCIONADOS</button>
+      <button class="btn btn-sm btn-secondary" onclick="clearSel('muellaje')">CANCELAR</button>
+    </div>
+    <div class="filter-row">
+      <select id="fil-m-cli" onchange="renderMuellaje()"><option value="">TODOS LOS CLIENTES</option></select>
+      <select id="fil-m-ev" onchange="renderMuellaje()"><option value="">TODOS LOS EVENTOS</option><option value="ATRACA">ATRACA</option><option value="ZARPA">ZARPA</option></select>
+    </div>
+    <div class="table-scroll"><table>
+      <thead><tr><th><input type="checkbox" onclick="selAll('muellaje',this)"></th><th>CLIENTE</th><th>EVENTO</th><th>FECHA · HORA</th><th>DÍAS</th><th>TARIFA/DÍA</th><th>SUBTOTAL</th><th>NOTAS</th><th></th></tr></thead>
+      <tbody id="m-tbody"></tbody>
+    </table></div>
+  </div>
+</div>
+
+<div class="section" id="sec-energia">
+  <div class="section-header"><div class="section-title">ENERGÍA</div><button class="btn btn-primary" onclick="openEnergia()">+ NUEVO</button></div>
+  <div id="e-warns"></div>
+  <div class="card">
+    <div class="bulk-bar" id="bulk-energia">
+      <span id="bulk-cnt-energia">0 SELECCIONADOS</span>
+      <button class="btn btn-sm btn-del" onclick="bulkDel('energia')">🗑️ ELIMINAR SELECCIONADOS</button>
+      <button class="btn btn-sm btn-secondary" onclick="clearSel('energia')">CANCELAR</button>
+    </div>
+    <div class="filter-row">
+      <select id="fil-e-cli" onchange="renderEnergia()"><option value="">TODOS LOS CLIENTES</option></select>
+      <select id="fil-e-ev" onchange="renderEnergia()"><option value="">TODOS LOS EVENTOS</option><option value="CONECTA">CONECTA</option><option value="DESCONECTA">DESCONECTA</option></select>
+    </div>
+    <div class="table-scroll"><table>
+      <thead><tr><th><input type="checkbox" onclick="selAll('energia',this)"></th><th>CLIENTE</th><th>EVENTO</th><th>VOLTAJE</th><th>FECHA · HORA</th><th>TARIFA/H</th><th>HORAS</th><th>SUBTOTAL</th><th>NOTAS</th><th></th></tr></thead>
+      <tbody id="e-tbody"></tbody>
+    </table></div>
+  </div>
+</div>
+
+<div class="section" id="sec-agua">
+  <div class="section-header"><div class="section-title">AGUA</div><button class="btn btn-primary" onclick="openAgua()">+ NUEVO</button></div>
+  <div class="card">
+    <div class="bulk-bar" id="bulk-agua">
+      <span id="bulk-cnt-agua">0 SELECCIONADOS</span>
+      <button class="btn btn-sm btn-del" onclick="bulkDel('agua')">🗑️ ELIMINAR SELECCIONADOS</button>
+      <button class="btn btn-sm btn-secondary" onclick="clearSel('agua')">CANCELAR</button>
+    </div>
+    <div class="filter-row">
+      <select id="fil-a-cli" onchange="renderAgua()"><option value="">TODOS LOS CLIENTES</option></select>
+      <select id="fil-a-ev" onchange="renderAgua()"><option value="">TODOS LOS EVENTOS</option><option value="CONECTA">CONECTA</option><option value="DESCONECTA">DESCONECTA</option></select>
+    </div>
+    <div class="table-scroll"><table>
+      <thead><tr><th><input type="checkbox" onclick="selAll('agua',this)"></th><th>CLIENTE</th><th>EVENTO</th><th>FECHA · HORA</th><th>TARIFA</th><th>SUBTOTAL</th><th>NOTAS</th><th></th></tr></thead>
+      <tbody id="a-tbody"></tbody>
+    </table></div>
+  </div>
+</div>
+
+<div class="section" id="sec-bodegaje">
+  <div class="section-header"><div class="section-title">BODEGAJE</div><button class="btn btn-primary" onclick="openBodegaje()">+ NUEVO</button></div>
+  <div class="card">
+    <div class="bulk-bar" id="bulk-bodegaje">
+      <span id="bulk-cnt-bodegaje">0 SELECCIONADOS</span>
+      <button class="btn btn-sm btn-del" onclick="bulkDel('bodegaje')">🗑️ ELIMINAR SELECCIONADOS</button>
+      <button class="btn btn-sm btn-secondary" onclick="clearSel('bodegaje')">CANCELAR</button>
+    </div>
+    <div class="filter-row">
+      <select id="fil-b-cli" onchange="renderBodegaje()"><option value="">TODOS LOS CLIENTES</option></select>
+      <select id="fil-b-ev" onchange="renderBodegaje()"><option value="">TODOS LOS EVENTOS</option><option value="INGRESA">INGRESA</option><option value="SALE">SALE</option><option value="CORTE">CORTE</option></select>
+    </div>
+    <div class="table-scroll"><table>
+      <thead><tr><th><input type="checkbox" onclick="selAll('bodegaje',this)"></th><th>CLIENTE</th><th>EVENTO</th><th>MERCANCÍA</th><th>FOTO</th><th>FECHA · HORA</th><th>DÍAS</th><th>TARIFA/DÍA</th><th>SUBTOTAL</th><th></th></tr></thead>
+      <tbody id="b-tbody"></tbody>
+    </table></div>
+  </div>
+</div>
+
+<div class="section" id="sec-vehiculos">
+  <div class="section-header"><div class="section-title">VEHÍCULOS</div><button class="btn btn-primary" onclick="openVehiculo()">+ NUEVO</button></div>
+  <div class="card">
+    <div class="bulk-bar" id="bulk-vehiculos">
+      <span id="bulk-cnt-vehiculos">0 SELECCIONADOS</span>
+      <button class="btn btn-sm btn-del" onclick="bulkDel('vehiculos')">🗑️ ELIMINAR SELECCIONADOS</button>
+      <button class="btn btn-sm btn-secondary" onclick="clearSel('vehiculos')">CANCELAR</button>
+    </div>
+    <div class="filter-row">
+      <select id="fil-v-cli" onchange="renderVehiculos()"><option value="">TODOS LOS CLIENTES</option></select>
+    </div>
+    <div class="table-scroll"><table>
+      <thead><tr><th><input type="checkbox" onclick="selAll('vehiculos',this)"></th><th>CLIENTE</th><th>TIPO</th><th>PLACA</th><th>MERCANCÍA</th><th>AUTORIZA</th><th>FECHA · HORA</th><th>VALOR</th><th></th></tr></thead>
+      <tbody id="v-tbody"></tbody>
+    </table></div>
+  </div>
+</div>
+
+<div class="section" id="sec-playa">
+  <div class="section-header"><div class="section-title">SERVICIO DE PLAYA</div><button class="btn btn-primary" onclick="openPlaya()">+ NUEVO</button></div>
+  <div class="card">
+    <div class="bulk-bar" id="bulk-playa">
+      <span id="bulk-cnt-playa">0 SELECCIONADOS</span>
+      <button class="btn btn-sm btn-del" onclick="bulkDel('playa')">🗑️ ELIMINAR SELECCIONADOS</button>
+      <button class="btn btn-sm btn-secondary" onclick="clearSel('playa')">CANCELAR</button>
+    </div>
+    <div class="filter-row">
+      <select id="fil-p-cli" onchange="renderPlaya()"><option value="">TODOS LOS CLIENTES</option></select>
+      <select id="fil-p-ev" onchange="renderPlaya()"><option value="">TODOS LOS EVENTOS</option><option value="INGRESA A PLAYA">INGRESA A PLAYA</option><option value="SALE DE PLAYA">SALE DE PLAYA</option></select>
+    </div>
+    <div class="table-scroll"><table>
+      <thead><tr><th><input type="checkbox" onclick="selAll('playa',this)"></th><th>CLIENTE</th><th>EVENTO</th><th>FECHA · HORA</th><th>DÍAS</th><th>TARIFA/DÍA</th><th>SUBTOTAL</th><th>NOTAS</th><th></th></tr></thead>
+      <tbody id="p-tbody"></tbody>
+    </table></div>
+  </div>
+</div>
+
+<div class="section" id="sec-arriendos">
+  <div class="section-header"><div class="section-title">ARRIENDOS</div><button class="btn btn-primary" onclick="openArriendo()">+ NUEVO</button></div>
+  <div class="card">
+    <div class="bulk-bar" id="bulk-arriendos">
+      <span id="bulk-cnt-arriendos">0 SELECCIONADOS</span>
+      <button class="btn btn-sm btn-del" onclick="bulkDel('arriendos')">🗑️ ELIMINAR SELECCIONADOS</button>
+      <button class="btn btn-sm btn-secondary" onclick="clearSel('arriendos')">CANCELAR</button>
+    </div>
+    <div class="filter-row">
+      <select id="fil-ar-cli" onchange="renderArriendos()"><option value="">TODOS LOS CLIENTES</option></select>
+    </div>
+    <div class="table-scroll"><table>
+      <thead><tr><th><input type="checkbox" onclick="selAll('arriendos',this)"></th><th>CLIENTE</th><th>TIPO</th><th>DESDE</th><th>HASTA</th><th>MESES</th><th>VALOR/MES</th><th>ENERGÍA</th><th>SUBTOTAL</th><th>NOTAS</th><th></th></tr></thead>
+      <tbody id="ar-tbody"></tbody>
+    </table></div>
+  </div>
+</div>
+
+<div class="section" id="sec-factura">
+  <div class="section-header"><div class="section-title">FACTURACIÓN</div></div>
+  <div class="card" style="padding:14px">
+    <div class="form-grid g3" style="max-width:580px;margin-bottom:10px">
+      <div class="field"><label>CLIENTE / EMBARCACIÓN</label><select id="f-cli"><option value="">— TODOS —</option></select></div>
+      <div class="field"><label>PERÍODO</label><select id="f-per">
+        <option value="todo">TODO EL HISTORIAL</option><option value="hoy">HOY</option>
+        <option value="semana">ÚLTIMA SEMANA</option><option value="mes">ÚLTIMO MES</option>
+      </select></div>
+      <div class="field" style="display:flex;align-items:flex-end"><button class="btn btn-primary" style="width:100%" onclick="calcFactura()">📊 CALCULAR</button></div>
+    </div>
+    <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:7px;letter-spacing:1px">SERVICIOS A INCLUIR:</div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;cursor:pointer"><input type="checkbox" id="fc-m" checked> ⚓ MUELLAJE</label>
+      <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;cursor:pointer"><input type="checkbox" id="fc-e" checked> ⚡ ENERGÍA</label>
+      <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;cursor:pointer"><input type="checkbox" id="fc-a" checked> 💧 AGUA</label>
+      <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;cursor:pointer"><input type="checkbox" id="fc-b" checked> 📦 BODEGAJE</label>
+      <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;cursor:pointer"><input type="checkbox" id="fc-v" checked> 🚗 VEHÍCULOS</label>
+      <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;cursor:pointer"><input type="checkbox" id="fc-p" checked> 🏖️ PLAYA</label>
+      <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;cursor:pointer"><input type="checkbox" id="fc-ar" checked> 🏢 ARRIENDOS</label>
+    </div>
+  </div>
+  <div id="factura-out"><div class="empty-state"><p>SELECCIONA UN CLIENTE Y CALCULA</p></div></div>
+</div>
+
+<div class="section" id="sec-admin">
+  <div class="section-header"><div class="section-title">ADMINISTRACIÓN</div></div>
+  <div class="card" style="padding:16px;margin-bottom:12px">
+    <div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:var(--navy);margin-bottom:10px">⚓ EMBARCACIONES / CLIENTES</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+      <div class="field" style="flex:1;min-width:160px"><label>NOMBRE</label><input type="text" id="adm-emb" placeholder="EJ: CRISMAR..."></div>
+      <div class="field" style="display:flex;align-items:flex-end"><button class="btn btn-primary" onclick="addEmb()">+ AGREGAR</button></div>
+    </div>
+    <div class="card"><div class="table-scroll"><table>
+      <thead><tr><th>#</th><th>NOMBRE (A→Z)</th><th></th></tr></thead>
+      <tbody id="adm-emb-tbody"></tbody>
+    </table></div></div>
+  </div>
+  <div class="card" style="padding:16px;margin-bottom:12px">
+    <div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:var(--navy);margin-bottom:10px">👤 USUARIOS</div>
+    <div class="form-grid g3" style="max-width:520px">
+      <div class="field"><label>NOMBRE</label><input type="text" id="adm-uname"></div>
+      <div class="field"><label>CONTRASEÑA (ADMIN ONLY)</label><input type="password" id="adm-upass" placeholder="VACÍO = SIN CLAVE"></div>
+      <div class="field"><label>ROL</label><select id="adm-urol"><option value="usuario">VIGILANTE</option><option value="admin">ADMINISTRADOR</option></select></div>
+    </div>
+    <button class="btn btn-primary" onclick="addUser()">+ CREAR</button>
+    <div class="card" style="margin-top:10px"><div class="table-scroll"><table>
+      <thead><tr><th>USUARIO</th><th>ROL</th><th>CLAVE</th><th></th></tr></thead>
+      <tbody id="adm-u-tbody"></tbody>
+    </table></div></div>
+  </div>
+  <div class="card" style="padding:16px">
+    <div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:var(--navy);margin-bottom:8px">💰 TARIFAS</div>
+    <div style="font-size:11px;color:var(--muted);line-height:2;font-weight:600">
+      ⚡ ENERGÍA 110V → <span style="color:var(--teal2)">$2.500/HORA</span><br>
+      ⚡ ENERGÍA 220V → <span style="color:var(--teal2)">$3.500/HORA</span><br>
+      💧 AGUA ESTÁNDAR → <span style="color:var(--teal2)">$35.000 POR SERVICIO</span><br>
+      ⚓ MUELLAJE → <span style="color:var(--amber)">LIBRE POR REGISTRO</span><br>
+      🚗 VEHÍCULOS → <span style="color:var(--amber)">SEGÚN TIPO (EDITABLE)</span>
+    </div>
+  </div>
+</div>
+</main>
+
+<!-- LIBRARIES -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<!-- FIREBASE -->
+<script type="module">
+import{initializeApp}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import{getFirestore,collection,doc,setDoc,deleteDoc,onSnapshot,getDoc,getDocs,query,orderBy}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import{getMessaging,getToken,onMessage}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js';
+
+const firebaseConfig={
+  apiKey:"AIzaSyDZO8sbreNiXStCj3DhTSqVcHBCp8dpP1U",
+  authDomain:"servibuques-9064b.firebaseapp.com",
+  projectId:"servibuques-9064b",
+  storageBucket:"servibuques-9064b.firebasestorage.app",
+  messagingSenderId:"180240963556",
+  appId:"1:180240963556:web:753027d0920d4d65c5d9f1"
+};
+
+const fbApp=initializeApp(firebaseConfig);
+const db=getFirestore(fbApp);
+
+// ── CONSTANTS ──
+const T_E110=2500,T_E220=3500,T_AGUA=35000;
+const VTARIFAS=[
+  {tipo:'CARRETA',valor:2250},{tipo:'MOTOCICLETA',valor:2250},{tipo:'TAXI',valor:4500},
+  {tipo:'MINIVANS',valor:6500},{tipo:'CARPATI',valor:6500},{tipo:'CAMIONETA',valor:8000},
+  {tipo:'TURBO PEQUEÑA',valor:13500},{tipo:'CARRO TANQUE PEQUEÑO',valor:17000},
+  {tipo:'CARRO TANQUE GRANDE',valor:20000},{tipo:'CAMIÓN 600',valor:20000},
+  {tipo:'TURBO GRANDE',valor:20000},{tipo:'DOBLE TROQUE',valor:28000},
+  {tipo:'VOLQUETA',valor:28000},{tipo:'GRÚA',valor:50000},
+  {tipo:'TRACTOMULA',valor:50000},{tipo:'MONTACARGA',valor:35000},{tipo:'OTRO',valor:0}
+];
+
+// ── LOCAL STATE ──
+let DB={muellaje:[],energia:[],agua:[],bodegaje:[],vehiculos:[],playa:[],arriendos:[]};
+let CFG={embarcaciones:['CRISMAR','GREYCI JIRETH','KARINA MAR','ÑENGO'],usuarios:[{name:'ADMIN',pass:'admin2024',rol:'admin'},{name:'VIGILANTE 1',pass:'',rol:'usuario'}]};
+let CU=null;
+let unsubscribers=[];
+
+// ── HELPERS ──
+const fmt=n=>'$'+Number(n||0).toLocaleString('es-CO');
+const fmtD=s=>{if(!s)return'—';const d=new Date(s);return d.toLocaleDateString('es-CO',{day:'2-digit',month:'2-digit',year:'2-digit'})+' '+d.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});};
+const fmtDF=s=>{if(!s)return'—';const d=new Date(s);const ms=['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];return`${d.getDate()}-${ms[d.getMonth()]}-${d.getFullYear()} ${d.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'})}`;};
+const nowStr=()=>new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,16);
+const diffH=(a,b)=>Math.max(0,(new Date(b)-new Date(a))/3600000);
+const diffD=(a,b)=>Math.max(0,(new Date(b)-new Date(a))/86400000);
+const uc=s=>(s||'').toUpperCase();
+const genId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const isAdmin=()=>CU&&CU.rol==='admin';
+
+// ── SYNC UI ──
+const syncBar=document.getElementById('sync-bar');
+const syncDot=document.getElementById('sync-dot');
+function setSyncing(){syncBar.className='loading';syncDot.className='sync-dot syncing';}
+function setSynced(){syncBar.className='done';syncDot.className='sync-dot online';setTimeout(()=>syncBar.className='',600);}
+function setOffline(){syncDot.className='sync-dot';}
+
+// ── TOAST ──
+let toastT;
+window.toast=(m,t='ok')=>{const el=document.getElementById('toast');el.textContent=m;el.className='alert '+t+' show';clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),3000);};
+window.openModal=h=>{
+  const bg=document.getElementById('modal-bg');
+  const body=document.getElementById('modal-body');
+  body.innerHTML=h;
+  bg.classList.add('open');
+  bg.style.display='flex';
+};
+window.closeModal=()=>{
+  const bg=document.getElementById('modal-bg');
+  bg.classList.remove('open');
+  bg.style.display='none';
+  document.getElementById('modal-body').innerHTML='';
+};
+window.showTab=t=>{
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(tb=>tb.classList.remove('active'));
+  const sec=document.getElementById('sec-'+t);if(sec)sec.classList.add('active');
+  [...document.querySelectorAll('.tab')].find(tb=>tb.getAttribute('onclick')===`showTab('${t}')`)?.classList.add('active');
+  window.scrollTo(0,0);
+  renderAll();
+};
+const embSel=(id,val='')=>`<select id="${id}"><option value="">— SELECCIONAR —</option>${CFG.embarcaciones.map(e=>`<option value="${e}"${e===val?' selected':''}>${e}</option>`).join('')}</select>`;
+window.upcase=id=>{const el=document.getElementById(id);if(el)el.value=el.value.toUpperCase();};
+
+// ── FIREBASE CRUD ──
+async function fbSave(tabla,rec){
+  setSyncing();
+  setDoc(doc(db,tabla,rec.id),{...rec,_ts:Date.now(),_user:CU?.name||'?'})
+    .then(()=>setSynced())
+    .catch(()=>{setOffline();toast('SIN CONEXIÓN — REINTENTANDO...','warn');});
+  return true;
+}
+async function fbDel(tabla,id){
+  setSyncing();
+  try{await deleteDoc(doc(db,tabla,id));setSynced();}
+  catch(e){setOffline();}
+}
+async function fbSaveCfg(){
+  try{
+    await setDoc(doc(db,'_config','embarcaciones'),{lista:CFG.embarcaciones});
+    await setDoc(doc(db,'_config','usuarios'),{lista:CFG.usuarios});
+  }catch(e){console.warn('cfg save fail',e);}
+}
+
+// ── REALTIME LISTENERS ──
+function startListeners(){
+  unsubscribers.forEach(u=>u());
+  unsubscribers=[];
+  const tablas=['muellaje','energia','agua','bodegaje','vehiculos','playa','arriendos'];
+  tablas.forEach(tabla=>{
+    const unsub=onSnapshot(collection(db,tabla),snap=>{
+      DB[tabla]=snap.docs.map(d=>d.data());
+      renderAll();
+      setSynced();
+    },err=>{setOffline();console.warn(tabla,err);});
+    unsubscribers.push(unsub);
+  });
+  // Config listener
+  const unsubCfg=onSnapshot(collection(db,'_config'),snap=>{
+    snap.docs.forEach(d=>{
+      if(d.id==='embarcaciones'&&d.data().lista)CFG.embarcaciones=d.data().lista;
+      if(d.id==='usuarios'&&d.data().lista)CFG.usuarios=d.data().lista;
+    });
+    populateUsers();renderAll();
+  });
+  unsubscribers.push(unsubCfg);
+}
+
+// ── AUTH ──
+window.populateUsers=()=>{
+  const s=document.getElementById('li-user');
+  s.innerHTML='<option value="">— SELECCIONAR —</option>';
+  CFG.usuarios.forEach((u,i)=>s.innerHTML+=`<option value="${i}">${u.name}</option>`);
+  s.onchange=()=>{
+    const idx=s.value;const pw=document.getElementById('li-pass-wrap');
+    pw.style.display=(idx===''||CFG.usuarios[+idx]?.rol==='admin')?'block':'none';
+  };
+};
+window.doLogin=()=>{
+  const idx=document.getElementById('li-user').value;
+  const pass=document.getElementById('li-pass').value;
+  const err=document.getElementById('li-err');
+  if(!idx){err.textContent='SELECCIONA UN USUARIO';return;}
+  const u=CFG.usuarios[+idx];
+  if(u.rol==='admin'&&u.pass!==pass){err.textContent='CONTRASEÑA INCORRECTA';return;}
+  CU=u;err.textContent='';document.getElementById('li-pass').value='';
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('h-name').textContent=u.name;
+  document.getElementById('h-role').innerHTML=u.rol==='admin'?'<span class="role-badge role-admin">ADMIN</span>':'<span class="role-badge role-user">VIGILANTE</span>';
+  if(u.rol==='admin')document.querySelectorAll('.admin-only').forEach(el=>el.style.display='flex');
+  startListeners();
+  renderAll();
+  toast('BIENVENIDO, '+u.name,'ok');
+  // Show notif banner after 3s
+  setTimeout(()=>{if(Notification.permission==='default')document.getElementById('notif-banner').style.display='block';},3000);
+};
+window.doLogout=()=>{
+  CU=null;unsubscribers.forEach(u=>u());unsubscribers=[];
+  document.getElementById('login-screen').style.display='flex';
+  document.querySelectorAll('.admin-only').forEach(el=>el.style.display='none');
+  populateUsers();showTab('dashboard');
+};
+
+// ── NOTIFICATIONS ──
+window.pedirNotificaciones=async()=>{
+  document.getElementById('notif-banner').style.display='none';
+  try{
+    const perm=await Notification.requestPermission();
+    if(perm==='granted'){
+      toast('✅ NOTIFICACIONES ACTIVADAS','ok');
+      new Notification('SERVIBUQUES',{body:'NOTIFICACIONES ACTIVADAS CORRECTAMENTE',icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">⚓</text></svg>'});
+    }
+  }catch(e){toast('NO SE PUDIERON ACTIVAR LAS NOTIFICACIONES','warn');}
+};
+function enviarNotif(titulo,cuerpo){
+  if(Notification.permission==='granted'){
+    new Notification(titulo,{body:cuerpo,icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">⚓</text></svg>'});
+  }
+}
+
+// ── MUELLAJE ──
+window.openMuellaje=eid=>{
+  const r=eid?DB.muellaje.find(x=>x.id===eid):null;
+  openModal(`<div class="modal-title">⚓ ${r?'EDITAR':'NUEVO'} REGISTRO DE MUELLAJE</div>
+  <div class="form-grid g2">
+    <div class="field"><label>EMBARCACIÓN *</label>${embSel('fm-cli',r?.cliente)}</div>
+    <div class="field"><label>EVENTO *</label><select id="fm-acc">
+      <option value="ATRACA"${!r||r.accion==='ATRACA'?' selected':''}>⚓ ATRACA</option>
+      <option value="ZARPA"${r?.accion==='ZARPA'?' selected':''}>🚢 ZARPA</option>
+    </select></div>
+    <div class="field"><label>FECHA Y HORA *</label><input type="datetime-local" id="fm-fecha" value="${r?.fecha||nowStr()}"></div>
+    <div class="field"><label>TARIFA POR DÍA (COP)</label><input type="number" id="fm-tar" value="${r?.tarifa??35000}"></div>
+    <div class="field" style="grid-column:span 2"><label>NOTAS</label><textarea id="fm-notas" oninput="upcase('fm-notas')">${r?.notas||''}</textarea></div>
+  </div>
+  <div class="modal-actions">
+    <button class="btn btn-secondary" onclick="closeModal()">CANCELAR</button>
+    <button class="btn btn-primary" onclick="saveMuellaje('${eid||''}')">✓ GUARDAR</button>
+  </div>`);
+};
+window.saveMuellaje=async eid=>{
+  const btn=document.querySelector('#modal-body .btn-primary');
+  if(btn){btn.disabled=true;btn.textContent='⏳ GUARDANDO...';}
+  const cli=document.getElementById('fm-cli').value;
+  const acc=document.getElementById('fm-acc').value;
+  const fecha=document.getElementById('fm-fecha').value;
+  const tarifa=parseFloat(document.getElementById('fm-tar').value)||0;
+  const notas=uc(document.getElementById('fm-notas').value);
+  if(!cli){toast('SELECCIONA LA EMBARCACIÓN','err');if(btn){btn.disabled=false;btn.textContent='✓ GUARDAR';}return;}
+  if(!fecha){toast('SELECCIONA FECHA Y HORA','err');if(btn){btn.disabled=false;btn.textContent='✓ GUARDAR';}return;}
+  if(acc==='ZARPA'){
+    const at=DB.muellaje.find(r=>r.cliente===cli&&r.accion==='ATRACA'&&r.fecha<fecha&&(eid?r.id!==eid:true));
+    if(!at){toast('⚠️ NO HAY ATRACA PREVIO PARA ESTA EMBARCACIÓN','warn');if(btn){btn.disabled=false;btn.textContent='✓ GUARDAR';}return;}
+  }
+  const rec={id:eid||genId(),cliente:cli,accion:acc,fecha,tarifa,notas};
+  const ok=await fbSave('muellaje',rec);
+  if(!ok){if(btn){btn.disabled=false;btn.textContent='✓ GUARDAR';}return;}
+  enviarNotif('⚓ MUELLAJE',`${acc} — ${cli} (${CU.name})`);
+  closeModal();showTab('muellaje');toast('✓ GUARDADO CORRECTAMENTE','ok');
+};
+const calcMuellaje=r=>{
+  if(r.accion!=='ATRACA')return{dias:null,sub:0,zarpaFecha:null};
+  const z=DB.muellaje.filter(x=>x.cliente===r.cliente&&x.accion==='ZARPA'&&x.fecha>r.fecha).sort((a,b)=>a.fecha>b.fecha?1:-1)[0];
+  const d=diffD(r.fecha,z?z.fecha:nowStr());
+  const dias=Math.round(d*10)/10;
+  const sub=Math.round(dias*r.tarifa*10)/10;
+  return{dias:dias.toFixed(1),sub,zarpaFecha:z?.fecha};
+};
+
+// ── ENERGÍA ──
+const getTar=v=>v==='220'?T_E220:T_E110;
+window.openEnergia=eid=>{
+  const r=eid?DB.energia.find(x=>x.id===eid):null;const v=r?.volt||'110';
+  openModal(`<div class="modal-title">⚡ ${r?'EDITAR':'NUEVO'} REGISTRO DE ENERGÍA</div>
+  <div class="form-grid g2">
+    <div class="field"><label>EMBARCACIÓN *</label>${embSel('fe-cli',r?.cliente)}</div>
+    <div class="field"><label>EVENTO *</label><select id="fe-acc">
+      <option value="CONECTA"${!r||r.accion==='CONECTA'?' selected':''}>🔌 CONECTA</option>
+      <option value="DESCONECTA"${r?.accion==='DESCONECTA'?' selected':''}>🔴 DESCONECTA</option>
+    </select></div>
+    <div class="field"><label>VOLTAJE *</label><select id="fe-volt" onchange="updTar()">
+      <option value="110"${v==='110'?' selected':''}>110 VOLTIOS</option>
+      <option value="220"${v==='220'?' selected':''}>220 VOLTIOS</option>
+    </select></div>
+    <div class="field"><label>TARIFA/HORA</label><div class="tarifa-fixed" id="fe-tar-d">${fmt(getTar(v))}</div><div class="field-note">110V=$2.500/H · 220V=$3.500/H</div></div>
+    <div class="field"><label>FECHA Y HORA *</label><input type="datetime-local" id="fe-fecha" value="${r?.fecha||nowStr()}"></div>
+    <div class="field"><label>NOTAS</label><textarea id="fe-notas" oninput="upcase('fe-notas')">${r?.notas||''}</textarea></div>
+  </div>
+  <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal()">CANCELAR</button><button class="btn btn-primary" onclick="saveEnergia('${eid||''}')">✓ GUARDAR</button></div>`);
+};
+window.updTar=()=>{const v=document.getElementById('fe-volt')?.value;const d=document.getElementById('fe-tar-d');if(d&&v)d.textContent=fmt(getTar(v));};
+window.saveEnergia=async eid=>{
+  const btn=document.querySelector('#modal-body .btn-primary');
+  if(btn){btn.disabled=true;btn.textContent='⏳ GUARDANDO...';}
+  const cli=document.getElementById('fe-cli').value;
+  const acc=document.getElementById('fe-acc').value;
+  const volt=document.getElementById('fe-volt').value;
+  const fecha=document.getElementById('fe-fecha').value;
+  const notas=uc(document.getElementById('fe-notas').value);
+  const tarifa=getTar(volt);
+  const fail=m=>{toast(m,'warn');if(btn){btn.disabled=false;btn.textContent='✓ GUARDAR';}};
+  if(!cli)return fail('SELECCIONA LA EMBARCACIÓN');
+  if(!fecha)return fail('SELECCIONA FECHA Y HORA');
+  const otros=DB.energia.filter(r=>eid?r.id!==eid:true);
+  if(acc==='DESCONECTA'){
+    const conxs=otros.filter(r=>r.cliente===cli&&r.accion==='CONECTA'&&r.volt===volt&&r.fecha<fecha);
+    if(!conxs.length)return fail(`⚠️ NO HAY CONECTA ${volt}V PREVIA PARA ${cli}`);
+    const ultima=conxs.sort((a,b)=>b.fecha>a.fecha?1:-1)[0];
+    if(otros.find(r=>r.cliente===cli&&r.accion==='DESCONECTA'&&r.volt===volt&&r.fecha>ultima.fecha))return fail(`⚠️ YA EXISTE DESCONECTA ${volt}V PARA ${cli}`);
+    if(diffH(ultima.fecha,fecha)<(5/60))return fail('⚠️ MENOS DE 5 MIN — VERIFICA LAS FECHAS');
+  }
+  if(acc==='CONECTA'){
+    const activa=otros.find(r=>r.cliente===cli&&r.accion==='CONECTA'&&r.volt===volt&&!otros.find(d=>d.cliente===cli&&d.accion==='DESCONECTA'&&d.volt===volt&&d.fecha>r.fecha));
+    if(activa)return fail(`⚠️ ${cli} YA TIENE CONEXIÓN ${volt}V ACTIVA`);
+  }
+  const rec={id:eid||genId(),cliente:cli,accion:acc,volt,fecha,tarifa,notas};
+  const ok=await fbSave('energia',rec);
+  if(!ok){if(btn){btn.disabled=false;btn.textContent='✓ GUARDAR';}return;}
+  enviarNotif('⚡ ENERGÍA',`${acc} ${volt}V — ${cli} (${CU.name})`);
+  closeModal();showTab('energia');toast('✓ GUARDADO CORRECTAMENTE','ok');
+};
+const calcEnergia=r=>{
+  if(r.accion!=='CONECTA')return{horas:null,sub:0,descFecha:null};
+  const d=DB.energia.filter(x=>x.cliente===r.cliente&&x.accion==='DESCONECTA'&&x.volt===r.volt&&x.fecha>r.fecha).sort((a,b)=>a.fecha>b.fecha?1:-1)[0];
+  const h=diffH(r.fecha,d?d.fecha:nowStr());
+  const horas=Math.round(h*10)/10;
+  const sub=Math.round(horas*r.tarifa*10)/10;
+  return{horas:horas.toFixed(1),sub,descFecha:d?.fecha};
+};
+
+// ── AGUA ──
+window.openAgua=eid=>{
+  const r=eid?DB.agua.find(x=>x.id===eid):null;
+  openModal(`<div class="modal-title">💧 ${r?'EDITAR':'NUEVO'} REGISTRO DE AGUA</div>
+  <div class="form-grid g2">
+    <div class="field"><label>EMBARCACIÓN *</label>${embSel('fa-cli',r?.cliente)}</div>
+    <div class="field"><label>EVENTO *</label><select id="fa-acc">
+      <option value="CONECTA"${!r||r.accion==='CONECTA'?' selected':''}>🔵 CONECTA AGUA</option>
+      <option value="DESCONECTA"${r?.accion==='DESCONECTA'?' selected':''}>⚪ DESCONECTA AGUA</option>
+    </select></div>
+    <div class="field"><label>TARIFA POR SERVICIO (COP)</label>
+      <input type="number" id="fa-tar" value="${r?.tarifa??T_AGUA}">
+      <div class="field-note">ESTÁNDAR: ${fmt(T_AGUA)} — MODIFICA SI HAY TARIFA ESPECIAL</div>
+    </div>
+    <div class="field"><label>FECHA Y HORA *</label><input type="datetime-local" id="fa-fecha" value="${r?.fecha||nowStr()}"></div>
+    <div class="field" style="grid-column:span 2"><label>NOTAS</label><textarea id="fa-notas" oninput="upcase('fa-notas')">${r?.notas||''}</textarea></div>
+  </div>
+  <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal()">CANCELAR</button><button class="btn btn-primary" onclick="saveAgua('${eid||''}')">✓ GUARDAR</button></div>`);
+};
+window.saveAgua=async eid=>{
+  const btn=document.querySelector('#modal-body .btn-primary');
+  if(btn){btn.disabled=true;btn.textContent='⏳ GUARDANDO...';}
+  const cli=document.getElementById('fa-cli').value;
+  const acc=document.getElementById('fa-acc').value;
+  const tarifa=parseFloat(document.getElementById('fa-tar').value)||T_AGUA;
+  const fecha=document.getElementById('fa-fecha').value;
+  const notas=uc(document.getElementById('fa-notas').value);
+  const fail=m=>{toast(m,'warn');if(btn){btn.disabled=false;btn.textContent='✓ GUARDAR';}};
+  if(!cli)return fail('SELECCIONA LA EMBARCACIÓN');
+  if(!fecha)return fail('SELECCIONA FECHA Y HORA');
+  const otros=DB.agua.filter(r=>eid?r.id!==eid:true);
+  if(acc==='DESCONECTA'&&!otros.find(r=>r.cliente===cli&&r.accion==='CONECTA'&&r.fecha<fecha))return fail('⚠️ NO HAY CONECTA DE AGUA PREVIA');
+  if(acc==='CONECTA'&&otros.find(r=>r.cliente===cli&&r.accion==='CONECTA'&&!otros.find(d=>d.cliente===cli&&d.accion==='DESCONECTA'&&d.fecha>r.fecha)))return fail('⚠️ YA HAY AGUA ACTIVA — REGISTRA DESCONECTA PRIMERO');
+  const rec={id:eid||genId(),cliente:cli,accion:acc,fecha,tarifa,notas};
+  const ok=await fbSave('agua',rec);
+  if(!ok){if(btn){btn.disabled=false;btn.textContent='✓ GUARDAR';}return;}
+  enviarNotif('💧 AGUA',`${acc} AGUA — ${cli} (${CU.name})`);
+  closeModal();showTab('agua');toast('✓ GUARDADO CORRECTAMENTE','ok');
+};
+const calcAgua=r=>{
+  if(r.accion!=='CONECTA')return{sub:0,descFecha:null};
+  const d=DB.agua.filter(x=>x.cliente===r.cliente&&x.accion==='DESCONECTA'&&x.fecha>r.fecha).sort((a,b)=>a.fecha>b.fecha?1:-1)[0];
+  return{sub:d?r.tarifa:0,descFecha:d?.fecha};
+};
+
+// ── BODEGAJE ──
+window.openBodegaje=eid=>{
+  const r=eid?DB.bodegaje.find(x=>x.id===eid):null;
+  openModal(`<div class="modal-title">📦 ${r?'EDITAR':'NUEVO'} REGISTRO DE BODEGAJE</div>
+  <div class="form-grid g2">
+    <div class="field"><label>CLIENTE *</label>${embSel('fb-cli',r?.cliente)}</div>
+    <div class="field"><label>ACCIÓN *</label><select id="fb-acc">
+      <option value="INGRESA"${!r||r.accion==='INGRESA'?' selected':''}>📥 INGRESA</option>
+      <option value="SALE"${r?.accion==='SALE'?' selected':''}>📤 SALE</option>
+      <option value="CORTE"${r?.accion==='CORTE'?' selected':''}>✂️ CORTE</option>
+    </select></div>
+    <div class="field"><label>FECHA Y HORA *</label><input type="datetime-local" id="fb-fecha" value="${r?.fecha||nowStr()}"></div>
+    <div class="field"><label>TARIFA POR DÍA (COP)</label><input type="number" id="fb-tar" value="${r?.tarifa||0}"></div>
+    <div class="field" style="grid-column:span 2"><label>MERCANCÍA *</label><textarea id="fb-merc" oninput="upcase('fb-merc')">${r?.mercancia||''}</textarea></div>
+    <div class="field" style="grid-column:span 2"><label>NOTAS</label><textarea id="fb-notas" oninput="upcase('fb-notas')">${r?.notas||''}</textarea></div>
+    <div class="field" style="grid-column:span 2">
+      <label>📸 FOTO (OPCIONAL)</label>
+      <input type="file" id="fb-foto" accept="image/*" capture="environment" style="border:none;padding:4px 0;background:none;font-size:12px;width:100%">
+      <div class="field-note">EN CELULAR ABRE LA CÁMARA DIRECTAMENTE</div>
+      ${r?.foto?`<div style="margin-top:8px"><img src="${r.foto}" style="width:100px;height:75px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer" onclick="verFoto('${r.id}')"></div>`:''}
+    </div>
+  </div>
+  <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal()">CANCELAR</button><button class="btn btn-primary" onclick="saveBodegaje('${eid||''}')">✓ GUARDAR</button></div>`);
+};
+window.saveBodegaje=eid=>{
+  const btn=document.querySelector('#modal-body .btn-primary');
+  if(btn){btn.disabled=true;btn.textContent='⏳ GUARDANDO...';}
+  const cli=document.getElementById('fb-cli').value;
+  const acc=document.getElementById('fb-acc').value;
+  const fecha=document.getElementById('fb-fecha').value;
+  const tarifa=parseFloat(document.getElementById('fb-tar').value)||0;
+  const mercancia=uc(document.getElementById('fb-merc').value.trim());
+  const notas=uc(document.getElementById('fb-notas').value);
+  const fail=m=>{toast(m,'warn');if(btn){btn.disabled=false;btn.textContent='✓ GUARDAR';}};
+  if(!cli)return fail('SELECCIONA EL CLIENTE');
+  if(!mercancia)return fail('DESCRIBE LA MERCANCÍA');
+  if(!fecha)return fail('SELECCIONA FECHA Y HORA');
+  const fotoFile=document.getElementById('fb-foto').files[0];
+  const existFoto=eid?DB.bodegaje.find(x=>x.id===eid)?.foto||'':'';
+  const doSave=async foto=>{
+    const rec={id:eid||genId(),cliente:cli,accion:acc,fecha,tarifa,mercancia,notas,foto:foto||''};
+    const ok=await fbSave('bodegaje',rec);
+    if(!ok){if(btn){btn.disabled=false;btn.textContent='✓ GUARDAR';}return;}
+    enviarNotif('📦 BODEGAJE',`${acc} — ${cli}: ${mercancia.slice(0,40)} (${CU.name})`);
+    closeModal();showTab('bodegaje');toast('✓ GUARDADO CORRECTAMENTE','ok');
+  };
+  if(fotoFile){const reader=new FileReader();reader.onload=e=>doSave(e.target.result);reader.readAsDataURL(fotoFile);}
+  else doSave(existFoto);
+};
+window.verFoto=id=>{
+  const r=DB.bodegaje.find(x=>x.id===id);if(!r?.foto)return;
+  openModal(`<div class="modal-title">📸 FOTO DE MERCANCÍA</div><img src="${r.foto}" style="width:100%;border-radius:8px;margin-bottom:12px"><div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal()">CERRAR</button></div>`);
+};
+const calcBodegaje=r=>{
+  if(r.accion!=='INGRESA')return{dias:null,sub:0};
+  const c=DB.bodegaje.filter(x=>x.cliente===r.cliente&&(x.accion==='SALE'||x.accion==='CORTE')&&x.fecha>r.fecha).sort((a,b)=>a.fecha>b.fecha?1:-1)[0];
+  const d=diffD(r.fecha,c?c.fecha:nowStr());
+  const dias=Math.round(d*10)/10;
+  const sub=Math.round(dias*r.tarifa*10)/10;
+  return{dias:dias.toFixed(1),sub};
+};
+// ── VEHÍCULOS ──
+const tipoTar=tipo=>(VTARIFAS.find(x=>x.tipo===tipo)||{valor:0}).valor;
+window.openVehiculo=eid=>{
+  const r=eid?DB.vehiculos.find(x=>x.id===eid):null;
+  const tOpts=VTARIFAS.map(t=>`<option value="${t.tipo}"${r?.tipo===t.tipo?' selected':''}>${t.tipo} — ${fmt(t.valor)}</option>`).join('');
+  openModal(`<div class="modal-title">🚗 ${r?'EDITAR':'NUEVO'} REGISTRO DE VEHÍCULO</div>
+  <div class="form-grid g2">
+    <div class="field"><label>CLIENTE *</label>${embSel('fv-cli',r?.cliente)}</div>
+    <div class="field"><label>TIPO DE VEHÍCULO *</label><select id="fv-tipo" onchange="updVehTar()">${tOpts}</select></div>
+    <div class="field"><label>PLACA</label><input type="text" id="fv-placa" placeholder="ABC-123" value="${r?.placa||''}" oninput="upcase('fv-placa')"></div>
+    <div class="field"><label>VALOR A COBRAR (COP)</label><input type="number" id="fv-valor" value="${r?.valor??tipoTar(r?.tipo||VTARIFAS[0].tipo)}"><div class="field-note">AUTOMÁTICO SEGÚN TIPO — EDITA PARA DESCUENTOS</div></div>
+    <div class="field"><label>MERCANCÍA QUE TRAE</label><input type="text" id="fv-merc" placeholder="EJ: VARILLAS, VÍVERES..." value="${r?.mercancia||''}" oninput="upcase('fv-merc')"></div>
+    <div class="field"><label>QUIEN AUTORIZA</label><input type="text" id="fv-autor" value="${r?.autoriza||''}" oninput="upcase('fv-autor')"></div>
+    <div class="field"><label>FECHA Y HORA *</label><input type="datetime-local" id="fv-fecha" value="${r?.fecha||nowStr()}"></div>
+    <div class="field"><label>NOTAS</label><textarea id="fv-notas" oninput="upcase('fv-notas')">${r?.notas||''}</textarea></div>
+  </div>
+  <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal()">CANCELAR</button><button class="btn btn-primary" onclick="saveVehiculo('${eid||''}')">✓ GUARDAR</button></div>`);
+  if(!r){const s=document.getElementById('fv-tipo');const v=document.getElementById('fv-valor');if(s&&v)v.value=tipoTar(s.value);}
+};
+window.updVehTar=()=>{const t=document.getElementById('fv-tipo')?.value;const v=document.getElementById('fv-valor');if(t&&v)v.value=tipoTar(t);};
+window.saveVehiculo=async eid=>{
+  const btn=document.querySelector('#modal-body .btn-primary');
+  if(btn){btn.disabled=true;btn.textContent='⏳ GUARDANDO...';}
+  const cli=document.getElementById('fv-cli').value;
+  const tipo=document.getElementById('fv-tipo').value;
+  const placa=uc(document.getElementById('fv-placa').value);
+  const valor=parseFloat(document.getElementById('fv-valor').value)||0;
+  const mercancia=uc(document.getElementById('fv-merc').value);
+  const autoriza=uc(document.getElementById('fv-autor').value);
+  const fecha=document.getElementById('fv-fecha').value;
+  const notas=uc(document.getElementById('fv-notas').value);
+  const fail=m=>{toast(m,'warn');if(btn){btn.disabled=false;btn.textContent='✓ GUARDAR';}};
+  if(!cli)return fail('SELECCIONA EL CLIENTE');
+  if(!fecha)return fail('SELECCIONA FECHA Y HORA');
+  const rec={id:eid||genId(),cliente:cli,tipo,placa,valor,mercancia,autoriza,fecha,notas};
+  fbSave('vehiculos',rec);
+  closeModal();showTab('vehiculos');toast('✓ GUARDADO CORRECTAMENTE','ok');
+};
+
+// ── DELETE ──
+window.delReg=(tabla,id)=>{
+  if(!isAdmin()){toast('SOLO EL ADMINISTRADOR PUEDE ELIMINAR','err');return;}
+  openModal(`<div class="modal-title" style="color:var(--red)">⚠️ CONFIRMAR ELIMINACIÓN</div>
+  <p style="font-size:13px;color:var(--muted);margin-bottom:16px">¿ELIMINAR ESTE REGISTRO? ESTA ACCIÓN NO SE PUEDE DESHACER.</p>
+  <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal()">CANCELAR</button><button class="btn btn-primary" style="background:var(--red)" onclick="confDel('${tabla}','${id}')">SÍ, ELIMINAR</button></div>`);
+};
+window.confDel=async(tabla,id)=>{await fbDel(tabla,id);closeModal();toast('ELIMINADO','ok');};
+
+// ── DASHBOARD ──
+function renderDashboard(){
+  const atrac=DB.muellaje.filter(r=>r.accion==='ATRACA'&&!DB.muellaje.find(d=>d.cliente===r.cliente&&d.accion==='ZARPA'&&d.fecha>r.fecha)).length;
+  document.getElementById('s-atrac').textContent=atrac;
+  const eact=DB.energia.filter(r=>r.accion==='CONECTA'&&!DB.energia.find(d=>d.cliente===r.cliente&&d.accion==='DESCONECTA'&&d.volt===r.volt&&d.fecha>r.fecha)).length;
+  document.getElementById('s-energ').textContent=eact;
+  const bact=DB.bodegaje.filter(r=>r.accion==='INGRESA'&&!DB.bodegaje.find(d=>d.cliente===r.cliente&&d.accion==='SALE'&&d.fecha>r.fecha)).length;
+  document.getElementById('s-bodeg').textContent=bact;
+  const hoy=new Date().toDateString();
+  document.getElementById('s-vehi').textContent=DB.vehiculos.filter(r=>new Date(r.fecha).toDateString()===hoy).length;
+  let tot=0;
+  DB.muellaje.forEach(r=>tot+=calcMuellaje(r).sub);
+  DB.energia.forEach(r=>tot+=calcEnergia(r).sub);
+  DB.agua.forEach(r=>tot+=calcAgua(r).sub);
+  DB.bodegaje.forEach(r=>tot+=calcBodegaje(r).sub);
+  DB.vehiculos.forEach(r=>tot+=r.valor||0);
+  DB.playa&&DB.playa.forEach(r=>tot+=calcPlaya(r).sub);
+  DB.arriendos&&DB.arriendos.forEach(r=>tot+=calcArriendo(r).sub);
+  document.getElementById('s-total').textContent='$'+tot.toLocaleString('es-CO');
+  document.getElementById('cnt-m').textContent=DB.muellaje.length;
+  document.getElementById('cnt-e').textContent=DB.energia.length;
+  document.getElementById('cnt-a').textContent=DB.agua.length;
+  document.getElementById('cnt-b').textContent=DB.bodegaje.length;
+  document.getElementById('cnt-v').textContent=DB.vehiculos.length;
+  document.getElementById('cnt-p').textContent=(DB.playa||[]).length;
+  document.getElementById('cnt-ar').textContent=(DB.arriendos||[]).length;
+  let ev=[];
+  DB.muellaje.forEach(r=>ev.push({mod:'⚓ MUELLAJE',cli:r.cliente,ev:r.accion,f:r.fecha,u:r._user||''}));
+  DB.energia.forEach(r=>ev.push({mod:'⚡ ENERGÍA',cli:r.cliente,ev:`${r.accion} ${r.volt}V`,f:r.fecha,u:r._user||''}));
+  DB.agua.forEach(r=>ev.push({mod:'💧 AGUA',cli:r.cliente,ev:`${r.accion} AGUA`,f:r.fecha,u:r._user||''}));
+  DB.bodegaje.forEach(r=>ev.push({mod:'📦 BODEGA',cli:r.cliente,ev:r.accion,f:r.fecha,u:r._user||''}));
+  DB.vehiculos.forEach(r=>ev.push({mod:'🚗 VEHÍCULO',cli:r.cliente,ev:r.tipo,f:r.fecha,u:r._user||''}));
+  ev.sort((a,b)=>b.f>a.f?1:-1);
+  const tb=document.getElementById('dash-tbody');
+  tb.innerHTML=ev.length?ev.slice(0,14).map(e=>`<tr>
+    <td><span class="bs bg-teal">${e.mod}</span></td><td><b>${e.cli}</b></td><td>${e.ev}</td>
+    <td style="white-space:nowrap;font-size:11px">${fmtD(e.f)}</td>
+    <td style="font-size:10px;color:var(--muted)">${e.u}</td>
+  </tr>`).join(''):'<tr><td colspan="5"><div class="empty-state"><div class="ico">📋</div><p>SIN ACTIVIDAD</p></div></td></tr>';
+}
+
+
+
+// ── BULK SELECT ──
+const SELECTED={muellaje:new Set(),energia:new Set(),agua:new Set(),bodegaje:new Set(),vehiculos:new Set(),playa:new Set(),arriendos:new Set()};
+window.selAll=(tabla,cb)=>{
+  const rows=document.querySelectorAll(`#${tabla[0]==='m'?'m':tabla[0]==='e'&&tabla==='energia'?'e':tabla[0]==='a'&&tabla==='agua'?'a':tabla[0]==='b'?'b':tabla[0]==='v'?'v':tabla[0]==='p'?'p':'ar'}-tbody input[type=checkbox]`);
+  rows.forEach(r=>{r.checked=cb.checked;const id=r.dataset.id;if(cb.checked)SELECTED[tabla].add(id);else SELECTED[tabla].delete(id);});
+  updBulkBar(tabla);
+};
+window.togSel=(tabla,id,cb)=>{if(cb.checked)SELECTED[tabla].add(id);else SELECTED[tabla].delete(id);updBulkBar(tabla);};
+function updBulkBar(tabla){
+  const n=SELECTED[tabla].size;
+  const bar=document.getElementById('bulk-'+tabla);
+  const cnt=document.getElementById('bulk-cnt-'+tabla);
+  if(bar){bar.classList.toggle('visible',n>0);if(cnt)cnt.textContent=n+' SELECCIONADO'+(n!==1?'S':'');}
+}
+window.clearSel=tabla=>{SELECTED[tabla].clear();updBulkBar(tabla);renderAll();};
+window.bulkDel=async tabla=>{
+  if(!isAdmin()){toast('SOLO EL ADMINISTRADOR PUEDE ELIMINAR','err');return;}
+  const ids=[...SELECTED[tabla]];
+  if(!ids.length)return;
+  openModal(`<div class="modal-title" style="color:var(--red)">⚠️ ELIMINAR ${ids.length} REGISTRO${ids.length!==1?'S':''}</div>
+  <p style="font-size:13px;color:var(--muted);margin-bottom:16px">¿SEGURO? ESTA ACCIÓN NO SE PUEDE DESHACER.</p>
+  <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal()">CANCELAR</button>
+  <button class="btn btn-primary" style="background:var(--red)" onclick="confBulkDel('${tabla}')">SÍ, ELIMINAR</button></div>`);
+};
+window.confBulkDel=async tabla=>{
+  const ids=[...SELECTED[tabla]];
+  for(const id of ids)await fbDel(tabla,id);
+  SELECTED[tabla].clear();closeModal();updBulkBar(tabla);toast(`${ids.length} REGISTROS ELIMINADOS`,'ok');
+};
+
+// ── FILTER HELPERS ──
+function getFilter(prefix,suffix){const el=document.getElementById(`fil-${prefix}-${suffix}`);return el?el.value:'';}
+function updateFilterOptions(tabla,prefix,arr){
+  const sel=document.getElementById(`fil-${prefix}-cli`);if(!sel)return;
+  const cur=sel.value;const cs=new Set(arr.map(r=>r.cliente).filter(Boolean));
+  sel.innerHTML='<option value="">TODOS LOS CLIENTES</option>';
+  [...cs].sort().forEach(c=>sel.innerHTML+=`<option value="${c}"${c===cur?' selected':''}>${c}</option>`);
+}
+
+// ── UPDATED RENDER MUELLAJE ──
+function renderMuellaje(){
+  updateFilterOptions('muellaje','m',DB.muellaje);
+  const fCli=getFilter('m','cli'),fEv=getFilter('m','ev');
+  const tb=document.getElementById('m-tbody');
+  const rows=DB.muellaje.filter(r=>(!fCli||r.cliente===fCli)&&(!fEv||r.accion===fEv)).sort((a,b)=>b.fecha>a.fecha?1:-1);
+  if(!rows.length){tb.innerHTML='<tr><td colspan="9"><div class="empty-state"><div class="ico">⚓</div><p>SIN REGISTROS</p></div></td></tr>';return;}
+  tb.innerHTML=rows.map(r=>{
+    const{dias,sub}=calcMuellaje(r);const ia=r.accion==='ATRACA';
+    const act=ia&&!DB.muellaje.find(d=>d.cliente===r.cliente&&d.accion==='ZARPA'&&d.fecha>r.fecha);
+    const sel=SELECTED.muellaje.has(r.id);
+    return`<tr><td><input type="checkbox" data-id="${r.id}" ${sel?'checked':''} onchange="togSel('muellaje','${r.id}',this)"></td>
+    <td><b>${r.cliente}</b>${act?'<br><span class="bs bg-green">EN MUELLE</span>':''}</td>
+    <td><span class="bs ${ia?'bg-green':'bg-amber'}">${r.accion}</span></td>
+    <td style="white-space:nowrap">${fmtD(r.fecha)}</td>
+    <td class="mono">${dias!==null?dias+'D':'—'}</td>
+    <td class="mono">${r.tarifa?fmt(r.tarifa):'<span class="muted">—</span>'}</td>
+    <td class="mono val-ok">${sub?fmt(sub):'<span class="muted">—</span>'}</td>
+    <td style="font-size:11px">${r.notas||'—'}</td>
+    <td><div class="btn-row"><button class="btn btn-sm btn-edit" onclick="openMuellaje('${r.id}')">✏️</button>${isAdmin()?`<button class="btn btn-sm btn-del" onclick="delReg('muellaje','${r.id}')">✕</button>`:''}</div></td></tr>`;
+  }).join('');
+}
+
+// ── UPDATED RENDER ENERGIA ──
+function renderEnergia(){
+  updateFilterOptions('energia','e',DB.energia);
+  let wh='';
+  [...new Set(DB.energia.map(r=>r.cliente))].forEach(cli=>['110','220'].forEach(v=>{
+    const rows=DB.energia.filter(r=>r.cliente===cli&&r.volt===v).sort((a,b)=>a.fecha>b.fecha?1:-1);
+    rows.forEach((r,i)=>{if(r.accion==='DESCONECTA'&&!rows.slice(0,i).reverse().find(x=>x.accion==='CONECTA'))wh+=`<div class="warn-box">⚠️ ${cli}: DESCONECTA ${v}V SIN CONECTA PREVIA — REVISAR (${fmtD(r.fecha)})</div>`;});
+  }));
+  document.getElementById('e-warns').innerHTML=wh;
+  const fCli=getFilter('e','cli'),fEv=getFilter('e','ev');
+  const tb=document.getElementById('e-tbody');
+  const rows=DB.energia.filter(r=>(!fCli||r.cliente===fCli)&&(!fEv||r.accion===fEv)).sort((a,b)=>b.fecha>a.fecha?1:-1);
+  if(!rows.length){tb.innerHTML='<tr><td colspan="10"><div class="empty-state"><div class="ico">⚡</div><p>SIN REGISTROS</p></div></td></tr>';return;}
+  tb.innerHTML=rows.map(r=>{
+    const ic=r.accion==='CONECTA';const{horas,sub}=calcEnergia(r);
+    const enC=ic&&!DB.energia.find(d=>d.cliente===r.cliente&&d.accion==='DESCONECTA'&&d.volt===r.volt&&d.fecha>r.fecha);
+    const sel=SELECTED.energia.has(r.id);
+    return`<tr><td><input type="checkbox" data-id="${r.id}" ${sel?'checked':''} onchange="togSel('energia','${r.id}',this)"></td>
+    <td><b>${r.cliente}</b></td><td><span class="bs ${ic?'bg-green':'bg-red'}">${r.accion}</span>${enC?'<span class="bs bg-amber" style="margin-left:3px">EN CURSO</span>':''}</td>
+    <td class="mono">${r.volt}V</td><td style="white-space:nowrap">${fmtD(r.fecha)}</td>
+    <td class="mono">${fmt(r.tarifa)}</td><td class="mono">${horas!==null?horas+'H':enC?'<span class="muted">EN CURSO</span>':'—'}</td>
+    <td class="mono val-ok">${sub?fmt(sub):'<span class="muted">—</span>'}</td>
+    <td style="font-size:11px">${r.notas||'—'}</td>
+    <td><div class="btn-row"><button class="btn btn-sm btn-edit" onclick="openEnergia('${r.id}')">✏️</button>${isAdmin()?`<button class="btn btn-sm btn-del" onclick="delReg('energia','${r.id}')">✕</button>`:''}</div></td></tr>`;
+  }).join('');
+}
+
+// ── UPDATED RENDER AGUA ──
+function renderAgua(){
+  updateFilterOptions('agua','a',DB.agua);
+  const fCli=getFilter('a','cli'),fEv=getFilter('a','ev');
+  const tb=document.getElementById('a-tbody');
+  const rows=DB.agua.filter(r=>(!fCli||r.cliente===fCli)&&(!fEv||r.accion===fEv)).sort((a,b)=>b.fecha>a.fecha?1:-1);
+  if(!rows.length){tb.innerHTML='<tr><td colspan="8"><div class="empty-state"><div class="ico">💧</div><p>SIN REGISTROS</p></div></td></tr>';return;}
+  tb.innerHTML=rows.map(r=>{
+    const ic=r.accion==='CONECTA';const{sub}=calcAgua(r);
+    const enC=ic&&!DB.agua.find(d=>d.cliente===r.cliente&&d.accion==='DESCONECTA'&&d.fecha>r.fecha);
+    const sel=SELECTED.agua.has(r.id);
+    return`<tr><td><input type="checkbox" data-id="${r.id}" ${sel?'checked':''} onchange="togSel('agua','${r.id}',this)"></td>
+    <td><b>${r.cliente}</b></td><td><span class="bs ${ic?'bg-teal':'bg-gray'}">${r.accion} AGUA</span>${enC?'<span class="bs bg-amber" style="margin-left:3px">EN CURSO</span>':''}</td>
+    <td style="white-space:nowrap">${fmtD(r.fecha)}</td>
+    <td class="mono">${fmt(r.tarifa)}${r.tarifa!==T_AGUA?'<span class="bs bg-amber" style="margin-left:3px">ESP.</span>':''}</td>
+    <td class="mono val-ok">${sub?fmt(sub):'<span class="muted">—</span>'}</td>
+    <td style="font-size:11px">${r.notas||'—'}</td>
+    <td><div class="btn-row"><button class="btn btn-sm btn-edit" onclick="openAgua('${r.id}')">✏️</button>${isAdmin()?`<button class="btn btn-sm btn-del" onclick="delReg('agua','${r.id}')">✕</button>`:''}</div></td></tr>`;
+  }).join('');
+}
+
+// ── UPDATED RENDER BODEGAJE ──
+function renderBodegaje(){
+  updateFilterOptions('bodegaje','b',DB.bodegaje);
+  const fCli=getFilter('b','cli'),fEv=getFilter('b','ev');
+  const tb=document.getElementById('b-tbody');
+  const rows=DB.bodegaje.filter(r=>(!fCli||r.cliente===fCli)&&(!fEv||r.accion===fEv)).sort((a,b)=>b.fecha>a.fecha?1:-1);
+  if(!rows.length){tb.innerHTML='<tr><td colspan="10"><div class="empty-state"><div class="ico">📦</div><p>SIN REGISTROS</p></div></td></tr>';return;}
+  const cm={INGRESA:'bg-teal',SALE:'bg-amber',CORTE:'bg-gray'};
+  tb.innerHTML=rows.map(r=>{
+    const{dias,sub}=calcBodegaje(r);const sel=SELECTED.bodegaje.has(r.id);
+    return`<tr><td><input type="checkbox" data-id="${r.id}" ${sel?'checked':''} onchange="togSel('bodegaje','${r.id}',this)"></td>
+    <td><b>${r.cliente}</b></td><td><span class="bs ${cm[r.accion]||'bg-gray'}">${r.accion}</span></td>
+    <td style="font-size:11px;max-width:120px">${r.mercancia||'—'}</td>
+    <td>${r.foto?`<img src="${r.foto}" class="photo-preview" onclick="verFoto('${r.id}')">`:'-'}</td>
+    <td style="white-space:nowrap">${fmtD(r.fecha)}</td>
+    <td class="mono">${dias!==null?dias+'D':'—'}</td>
+    <td class="mono">${r.tarifa?fmt(r.tarifa):'<span class="muted">—</span>'}</td>
+    <td class="mono val-ok">${sub?fmt(sub):'<span class="muted">—</span>'}</td>
+    <td><div class="btn-row"><button class="btn btn-sm btn-edit" onclick="openBodegaje('${r.id}')">✏️</button>${isAdmin()?`<button class="btn btn-sm btn-del" onclick="delReg('bodegaje','${r.id}')">✕</button>`:''}</div></td></tr>`;
+  }).join('');
+}
+
+// ── UPDATED RENDER VEHICULOS ──
+function renderVehiculos(){
+  updateFilterOptions('vehiculos','v',DB.vehiculos);
+  const fCli=getFilter('v','cli');
+  const tb=document.getElementById('v-tbody');
+  const rows=DB.vehiculos.filter(r=>!fCli||r.cliente===fCli).sort((a,b)=>b.fecha>a.fecha?1:-1);
+  if(!rows.length){tb.innerHTML='<tr><td colspan="9"><div class="empty-state"><div class="ico">🚗</div><p>SIN REGISTROS</p></div></td></tr>';return;}
+  tb.innerHTML=rows.map(r=>{const sel=SELECTED.vehiculos.has(r.id);return`<tr>
+    <td><input type="checkbox" data-id="${r.id}" ${sel?'checked':''} onchange="togSel('vehiculos','${r.id}',this)"></td>
+    <td><b>${r.cliente}</b></td><td><span class="bs bg-blue">${r.tipo}</span></td>
+    <td class="mono" style="color:var(--amber);font-weight:700">${r.placa||'—'}</td>
+    <td style="font-size:11px;max-width:110px">${r.mercancia||'—'}</td>
+    <td style="font-size:11px">${r.autoriza||'—'}</td>
+    <td style="white-space:nowrap">${fmtD(r.fecha)}</td>
+    <td class="mono val-ok">${r.valor?fmt(r.valor):'<span class="muted">—</span>'}</td>
+    <td><div class="btn-row"><button class="btn btn-sm btn-edit" onclick="openVehiculo('${r.id}')">✏️</button>${isAdmin()?`<button class="btn btn-sm btn-del" onclick="delReg('vehiculos','${r.id}')">✕</button>`:''}</div></td></tr>`;}).join('');
+}
+
+// ── PLAYA ──
+const calcPlaya=r=>{
+  if(r.accion!=='INGRESA A PLAYA')return{dias:null,sub:0};
+  const s=DB.playa.filter(x=>x.cliente===r.cliente&&x.accion==='SALE DE PLAYA'&&x.fecha>r.fecha).sort((a,b)=>a.fecha>b.fecha?1:-1)[0];
+  const d=diffD(r.fecha,s?s.fecha:nowStr());
+  const dias=Math.round(d*10)/10;
+  return{dias:dias.toFixed(1),sub:Math.round(dias*r.tarifa*10)/10};
+};
+window.openPlaya=eid=>{
+  const r=eid?DB.playa.find(x=>x.id===eid):null;
+  openModal(`<div class="modal-title">🏖️ ${r?'EDITAR':'NUEVO'} REGISTRO DE PLAYA</div>
+  <div class="form-grid g2">
+    <div class="field"><label>CLIENTE *</label>${embSel('fp-cli',r?.cliente)}</div>
+    <div class="field"><label>EVENTO *</label><select id="fp-acc">
+      <option value="INGRESA A PLAYA"${!r||r.accion==='INGRESA A PLAYA'?' selected':''}>⬇️ INGRESA A PLAYA</option>
+      <option value="SALE DE PLAYA"${r?.accion==='SALE DE PLAYA'?' selected':''}>⬆️ SALE DE PLAYA</option>
+    </select></div>
+    <div class="field"><label>FECHA Y HORA *</label><input type="datetime-local" id="fp-fecha" value="${r?.fecha||nowStr()}"></div>
+    <div class="field"><label>TARIFA POR DÍA (COP)</label>
+      <input type="number" id="fp-tar" value="${r?.tarifa??70000}">
+      <div class="field-note">ESTÁNDAR: $70.000/DÍA — MODIFICA SI NEGOCIAS</div>
+    </div>
+    <div class="field" style="grid-column:span 2"><label>NOTAS</label><textarea id="fp-notas" oninput="upcase('fp-notas')">${r?.notas||''}</textarea></div>
+  </div>
+  <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal()">CANCELAR</button><button class="btn btn-primary" onclick="savePlaya('${eid||''}')">✓ GUARDAR</button></div>`);
+};
+window.savePlaya=async eid=>{
+  const btn=document.querySelector('#modal-body .btn-primary');
+  if(btn){btn.disabled=true;btn.textContent='⏳ GUARDANDO...';}
+  const cli=document.getElementById('fp-cli').value;
+  const acc=document.getElementById('fp-acc').value;
+  const fecha=document.getElementById('fp-fecha').value;
+  const tarifa=parseFloat(document.getElementById('fp-tar').value)||70000;
+  const notas=uc(document.getElementById('fp-notas').value);
+  const fail=m=>{toast(m,'warn');if(btn){btn.disabled=false;btn.textContent='✓ GUARDAR';}};
+  if(!cli)return fail('SELECCIONA EL CLIENTE');
+  if(!fecha)return fail('SELECCIONA FECHA Y HORA');
+  if(acc==='SALE DE PLAYA'&&!DB.playa.find(r=>r.cliente===cli&&r.accion==='INGRESA A PLAYA'&&r.fecha<fecha))return fail('⚠️ NO HAY INGRESO A PLAYA PREVIO PARA ESTE CLIENTE');
+  const rec={id:eid||genId(),cliente:cli,accion:acc,fecha,tarifa,notas};
+  fbSave('playa',rec);
+  closeModal();showTab('playa');toast('✓ GUARDADO CORRECTAMENTE','ok');
+};
+function renderPlaya(){
+  updateFilterOptions('playa','p',DB.playa||[]);
+  const fCli=getFilter('p','cli'),fEv=getFilter('p','ev');
+  const tb=document.getElementById('p-tbody');
+  const rows=(DB.playa||[]).filter(r=>(!fCli||r.cliente===fCli)&&(!fEv||r.accion===fEv)).sort((a,b)=>b.fecha>a.fecha?1:-1);
+  if(!rows.length){tb.innerHTML='<tr><td colspan="9"><div class="empty-state"><div class="ico">🏖️</div><p>SIN REGISTROS</p></div></td></tr>';return;}
+  tb.innerHTML=rows.map(r=>{
+    const{dias,sub}=calcPlaya(r);const ia=r.accion==='INGRESA A PLAYA';const sel=SELECTED.playa.has(r.id);
+    return`<tr><td><input type="checkbox" data-id="${r.id}" ${sel?'checked':''} onchange="togSel('playa','${r.id}',this)"></td>
+    <td><b>${r.cliente}</b></td><td><span class="bs ${ia?'bg-teal':'bg-amber'}">${r.accion}</span></td>
+    <td style="white-space:nowrap">${fmtD(r.fecha)}</td>
+    <td class="mono">${dias!==null?dias+'D':'—'}</td>
+    <td class="mono">${r.tarifa?fmt(r.tarifa):'<span class="muted">—</span>'}</td>
+    <td class="mono val-ok">${sub?fmt(sub):'<span class="muted">—</span>'}</td>
+    <td style="font-size:11px">${r.notas||'—'}</td>
+    <td><div class="btn-row"><button class="btn btn-sm btn-edit" onclick="openPlaya('${r.id}')">✏️</button>${isAdmin()?`<button class="btn btn-sm btn-del" onclick="delReg('playa','${r.id}')">✕</button>`:''}</div></td></tr>`;
+  }).join('');
+}
+
+// ── ARRIENDOS ──
+const calcArriendo=r=>{
+  if(!r.desde||!r.hasta)return{meses:0,sub:0};
+  const d=new Date(r.desde),h=new Date(r.hasta);
+  const meses=Math.round(((h-d)/(1000*60*60*24*30))*10)/10;
+  const sub=Math.round(meses*(r.valor||0)*10)/10+(r.energia||0);
+  return{meses:meses.toFixed(1),sub};
+};
+window.openArriendo=eid=>{
+  const r=eid?DB.arriendos.find(x=>x.id===eid):null;
+  openModal(`<div class="modal-title">🏢 ${r?'EDITAR':'NUEVO'} ARRIENDO</div>
+  <div class="form-grid g2">
+    <div class="field"><label>CLIENTE *</label>${embSel('far-cli',r?.cliente)}</div>
+    <div class="field"><label>TIPO</label><select id="far-tipo">
+      <option value="BODEGA"${!r||r.tipo==='BODEGA'?' selected':''}>🏭 BODEGA</option>
+      <option value="OFICINA"${r?.tipo==='OFICINA'?' selected':''}>🏢 OFICINA</option>
+    </select></div>
+    <div class="field"><label>FECHA DESDE *</label><input type="datetime-local" id="far-desde" value="${r?.desde||nowStr()}"></div>
+    <div class="field"><label>FECHA HASTA *</label><input type="datetime-local" id="far-hasta" value="${r?.hasta||nowStr()}"></div>
+    <div class="field"><label>VALOR POR MES (COP)</label><input type="number" id="far-valor" value="${r?.valor||0}"></div>
+    <div class="field"><label>ENERGÍA A COBRAR (COP) — OPCIONAL</label>
+      <input type="number" id="far-energia" value="${r?.energia||0}">
+      <div class="field-note">INGRESA EL VALOR SI COBRA ENERGÍA APARTE</div>
+    </div>
+    <div class="field" style="grid-column:span 2"><label>NOTAS</label><textarea id="far-notas" oninput="upcase('far-notas')">${r?.notas||''}</textarea></div>
+  </div>
+  <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal()">CANCELAR</button><button class="btn btn-primary" onclick="saveArriendo('${eid||''}')">✓ GUARDAR</button></div>`);
+};
+window.saveArriendo=async eid=>{
+  const btn=document.querySelector('#modal-body .btn-primary');
+  if(btn){btn.disabled=true;btn.textContent='⏳ GUARDANDO...';}
+  const cli=document.getElementById('far-cli').value;
+  const tipo=document.getElementById('far-tipo').value;
+  const desde=document.getElementById('far-desde').value;
+  const hasta=document.getElementById('far-hasta').value;
+  const valor=parseFloat(document.getElementById('far-valor').value)||0;
+  const energia=parseFloat(document.getElementById('far-energia').value)||0;
+  const notas=uc(document.getElementById('far-notas').value);
+  const fail=m=>{toast(m,'warn');if(btn){btn.disabled=false;btn.textContent='✓ GUARDAR';}};
+  if(!cli)return fail('SELECCIONA EL CLIENTE');
+  if(!desde||!hasta)return fail('SELECCIONA FECHAS');
+  if(new Date(hasta)<=new Date(desde))return fail('⚠️ LA FECHA HASTA DEBE SER MAYOR A DESDE');
+  const rec={id:eid||genId(),cliente:cli,tipo,desde,hasta,valor,energia,notas};
+  fbSave('arriendos',rec);
+  closeModal();showTab('arriendos');toast('✓ GUARDADO CORRECTAMENTE','ok');
+};
+function renderArriendos(){
+  updateFilterOptions('arriendos','ar',DB.arriendos||[]);
+  const fCli=getFilter('ar','cli');
+  const tb=document.getElementById('ar-tbody');
+  const rows=(DB.arriendos||[]).filter(r=>!fCli||r.cliente===fCli).sort((a,b)=>b.desde>a.desde?1:-1);
+  if(!rows.length){tb.innerHTML='<tr><td colspan="11"><div class="empty-state"><div class="ico">🏢</div><p>SIN REGISTROS</p></div></td></tr>';return;}
+  tb.innerHTML=rows.map(r=>{
+    const{meses,sub}=calcArriendo(r);const sel=SELECTED.arriendos.has(r.id);
+    return`<tr><td><input type="checkbox" data-id="${r.id}" ${sel?'checked':''} onchange="togSel('arriendos','${r.id}',this)"></td>
+    <td><b>${r.cliente}</b></td><td><span class="bs bg-blue">${r.tipo}</span></td>
+    <td style="white-space:nowrap">${fmtD(r.desde)}</td>
+    <td style="white-space:nowrap">${fmtD(r.hasta)}</td>
+    <td class="mono">${meses}M</td>
+    <td class="mono">${r.valor?fmt(r.valor):'<span class="muted">—</span>'}</td>
+    <td class="mono">${r.energia?fmt(r.energia):'<span class="muted">—</span>'}</td>
+    <td class="mono val-ok">${sub?fmt(sub):'<span class="muted">—</span>'}</td>
+    <td style="font-size:11px">${r.notas||'—'}</td>
+    <td><div class="btn-row"><button class="btn btn-sm btn-edit" onclick="openArriendo('${r.id}')">✏️</button>${isAdmin()?`<button class="btn btn-sm btn-del" onclick="delReg('arriendos','${r.id}')">✕</button>`:''}</div></td></tr>`;
+  }).join('');
+}
+
+// ── ADMIN ──
+function renderAdmin(){
+  if(!isAdmin())return;
+  const sorted=[...CFG.embarcaciones].sort();
+  document.getElementById('adm-emb-tbody').innerHTML=sorted.map((e,i)=>{
+    const orig=CFG.embarcaciones.indexOf(e);
+    return`<tr><td class="muted">${i+1}</td><td><b>${e}</b></td>
+    <td><div class="btn-row">
+      <button class="btn btn-sm btn-edit" onclick="editEmb(${orig})">✏️</button>
+      <button class="btn btn-sm btn-del" onclick="delEmb(${orig})">✕</button>
+    </div></td></tr>`;
+  }).join('');
+  document.getElementById('adm-u-tbody').innerHTML=CFG.usuarios.map((u,i)=>`<tr><td><b>${u.name}</b></td><td><span class="bs ${u.rol==='admin'?'bg-amber':'bg-blue'}">${u.rol==='admin'?'ADMIN':'VIGILANTE'}</span></td><td class="muted">${u.rol==='admin'?'CON CLAVE':'SIN CLAVE'}</td><td><button class="btn btn-sm btn-del" onclick="delUser(${i})">✕</button></td></tr>`).join('');
+}
+window.editEmb=i=>{
+  openModal(`<div class="modal-title">✏️ EDITAR CLIENTE</div>
+  <div class="field"><label>NOMBRE</label><input type="text" id="edit-emb-val" value="${CFG.embarcaciones[i]}" oninput="upcase('edit-emb-val')"></div>
+  <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal()">CANCELAR</button>
+  <button class="btn btn-primary" onclick="confEditEmb(${i})">✓ GUARDAR</button></div>`);
+};
+window.confEditEmb=async i=>{
+  const n=uc(document.getElementById('edit-emb-val').value.trim());
+  if(!n){toast('ESCRIBE EL NOMBRE','err');return;}
+  CFG.embarcaciones[i]=n;await fbSaveCfg();closeModal();renderAll();toast('ACTUALIZADO ✓','ok');
+};
+window.addEmb=async()=>{
+  const n=uc(document.getElementById('adm-emb').value.trim());
+  if(!n){toast('ESCRIBE EL NOMBRE','err');return;}
+  if(CFG.embarcaciones.includes(n)){toast('YA EXISTE','warn');return;}
+  CFG.embarcaciones.push(n);document.getElementById('adm-emb').value='';
+  await fbSaveCfg();renderAll();toast('EMBARCACIÓN AGREGADA ✓','ok');
+};
+window.delEmb=async i=>{
+  if(!confirm('¿ELIMINAR?'))return;
+  CFG.embarcaciones.splice(i,1);await fbSaveCfg();renderAll();
+};
+window.addUser=async()=>{
+  const name=uc(document.getElementById('adm-uname').value.trim());
+  const pass=document.getElementById('adm-upass').value;
+  const rol=document.getElementById('adm-urol').value;
+  if(!name){toast('ESCRIBE EL NOMBRE','err');return;}
+  if(rol==='admin'&&!pass){toast('EL ADMIN DEBE TENER CONTRASEÑA','err');return;}
+  CFG.usuarios.push({name,pass:rol==='admin'?pass:'',rol});
+  document.getElementById('adm-uname').value='';document.getElementById('adm-upass').value='';
+  await fbSaveCfg();renderAll();populateUsers();toast('USUARIO CREADO ✓','ok');
+};
+window.delUser=async i=>{
+  if(CFG.usuarios[i].rol==='admin'&&CFG.usuarios.filter(u=>u.rol==='admin').length===1){toast('NO PUEDES ELIMINAR EL ÚNICO ADMIN','err');return;}
+  if(!confirm('¿ELIMINAR?'))return;
+  CFG.usuarios.splice(i,1);await fbSaveCfg();renderAll();populateUsers();
+};
+
+// ── UPDATED CALCULA FACTURA ──
+window.calcFactura=()=>{
+  const cli=document.getElementById('f-cli').value;
+  const per=document.getElementById('f-per').value;
+  const incM=document.getElementById('fc-m').checked,incE=document.getElementById('fc-e').checked;
+  const incA=document.getElementById('fc-a').checked,incB=document.getElementById('fc-b').checked;
+  const incV=document.getElementById('fc-v').checked;
+  const incP=document.getElementById('fc-p').checked,incAR=document.getElementById('fc-ar').checked;
+  const n=new Date();
+  const inP=d=>{const dt=new Date(d);if(per==='hoy')return dt.toDateString()===n.toDateString();if(per==='semana')return(n-dt)<=7*86400000;if(per==='mes')return(n-dt)<=30*86400000;return true;};
+  const f=a=>a.filter(r=>(!cli||r.cliente===cli)&&inP(r.fecha||r.desde));
+  let lines=[],grand=0;
+  const add=(lbl,arr,fn,tab,inc)=>{if(!inc)return;let s=0,ids=[];f(arr).forEach(r=>{const v=fn(r);s+=v;if(v>0)ids.push(r.id);});if(s>0){lines.push({lbl,val:s,tab,ids});grand+=s;}};
+  add('⚓ MUELLAJE',DB.muellaje,r=>calcMuellaje(r).sub,'muellaje',incM);
+  add('⚡ ENERGÍA',DB.energia,r=>calcEnergia(r).sub,'energia',incE);
+  add('💧 AGUA',DB.agua,r=>calcAgua(r).sub,'agua',incA);
+  add('📦 BODEGAJE',DB.bodegaje,r=>calcBodegaje(r).sub,'bodegaje',incB);
+  add('🚗 VEHÍCULOS',DB.vehiculos,r=>r.valor||0,'vehiculos',incV);
+  add('🏖️ PLAYA',DB.playa||[],r=>calcPlaya(r).sub,'playa',incP);
+  add('🏢 ARRIENDOS',DB.arriendos||[],r=>calcArriendo(r).sub,'arriendos',incAR);
+  const out=document.getElementById('factura-out');
+  if(!lines.length){out.innerHTML='<div class="empty-state"><p>SIN MOVIMIENTOS PARA EL PERÍODO</p></div>';return;}
+  const allIds=lines.flatMap(l=>l.ids.map(id=>l.tab+':'+id));
+  out.innerHTML=`<div class="factura-panel">
+    <div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:10px">
+      CLIENTE: <span style="color:var(--text)">${cli||'TODOS'}</span> | PERÍODO: <span style="color:var(--text)">${per.toUpperCase()}</span>
+    </div>
+    ${lines.map(l=>`<div class="frow"><span>${l.lbl}</span><span class="mono">${fmt(l.val)}</span></div>`).join('')}
+    <div class="frow" style="margin-top:8px;padding-top:8px;border-top:2px solid var(--teal);font-weight:700">
+      <span style="font-size:12px">TOTAL A FACTURAR</span><span class="ftotal">${fmt(grand)}</span>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-pdf" onclick="generarPDF('${cli}','${per}',${incM},${incE},${incA},${incB},${incV},${incP},${incAR})">📄 CUENTA DE COBRO</button>
+      <button class="btn btn-primary" style="background:var(--red)" onclick="factYElim(${JSON.stringify(allIds)})">🧾 FACTURADO — ELIMINAR</button>
+    </div>
+  </div>`;
+};
+
+// ── UPDATED PDF to include playa and arriendos ──
+window.generarPDF=(cli,per,incM,incE,incA,incB,incV,incP,incAR)=>{
+  const n=new Date();
+  const inP=d=>{const dt=new Date(d);if(per==='hoy')return dt.toDateString()===n.toDateString();if(per==='semana')return(n-dt)<=7*86400000;if(per==='mes')return(n-dt)<=30*86400000;return true;};
+  const f=a=>a.filter(r=>(!cli||r.cliente===cli)&&inP(r.fecha||r.desde));
+  const mRows=incM?f(DB.muellaje).filter(r=>r.accion==='ATRACA'):[];
+  let mT=0;const mL=mRows.map(r=>{const{dias,sub,zarpaFecha}=calcMuellaje(r);mT+=sub;return{desc:`ATRACA: ${fmtDF(r.fecha)}${zarpaFecha?' — ZARPA: '+fmtDF(zarpaFecha):' — EN MUELLE'}`,cant:`${dias} DÍAS`,u:r.tarifa,t:sub,notas:r.notas};});
+  const eRows=incE?f(DB.energia).filter(r=>r.accion==='CONECTA'):[];
+  let eT=0;const eL=eRows.map(r=>{const{horas,sub,descFecha}=calcEnergia(r);eT+=sub;return{desc:`ENERGÍA ${r.volt}V — CONECTA: ${fmtDF(r.fecha)}${descFecha?' — DESCONECTA: '+fmtDF(descFecha):' — EN CURSO'}`,cant:`${horas||'EN CURSO'} HORAS`,u:r.tarifa,t:sub,notas:r.notas};});
+  const aRows=incA?f(DB.agua).filter(r=>r.accion==='CONECTA'):[];
+  let aT=0;const aL=aRows.map(r=>{const{sub,descFecha}=calcAgua(r);aT+=sub;return{desc:`AGUA — SERVICIO: ${fmtDF(r.fecha)}${descFecha?' — CIERRE: '+fmtDF(descFecha):''}`,cant:'1 SERVICIO',u:r.tarifa,t:sub,notas:r.notas};});
+  const vRows=incV?f(DB.vehiculos):[];
+  let vT=0;const vL=vRows.map(r=>{vT+=r.valor||0;return{desc:`${r.tipo}${r.placa?' — PLACA: '+r.placa:''}${r.mercancia?' — '+r.mercancia:''}${r.autoriza?' — AUTORIZA: '+r.autoriza:''} — FECHA: ${fmtDF(r.fecha)}`,cant:'1',u:r.valor,t:r.valor||0,notas:r.notas};});
+  const bRows=incB?f(DB.bodegaje).filter(r=>r.accion==='INGRESA'):[];
+  let bT=0;const bL=bRows.map(r=>{const{dias,sub}=calcBodegaje(r);bT+=sub;return{desc:`BODEGA: ${r.mercancia} — INGRESO: ${fmtDF(r.fecha)}`,cant:`${dias} DÍAS`,u:r.tarifa,t:sub,notas:r.notas};});
+  const pRows=incP?(DB.playa||[]).filter(r=>r.accion==='INGRESA A PLAYA'&&(!cli||r.cliente===cli)&&inP(r.fecha)):[];
+  let pT=0;const pL=pRows.map(r=>{const{dias,sub}=calcPlaya(r);pT+=sub;return{desc:`PLAYA — INGRESO: ${fmtDF(r.fecha)}`,cant:`${dias} DÍAS`,u:r.tarifa,t:sub,notas:r.notas};});
+  const arRows=incAR?(DB.arriendos||[]).filter(r=>(!cli||r.cliente===cli)&&inP(r.desde)):[];
+  let arT=0;const arL=arRows.map(r=>{const{meses,sub}=calcArriendo(r);arT+=sub;return{desc:`${r.tipo} — DESDE: ${fmtDF(r.desde)} HASTA: ${fmtDF(r.hasta)}${r.energia?' — ENERGÍA: '+fmt(r.energia):''}`,cant:`${meses} MESES`,u:r.valor,t:sub,notas:r.notas};});
+  const grand=mT+eT+aT+vT+bT+pT+arT;
+  const fechaDoc=new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'long',year:'numeric'}).toUpperCase();
+  const sec=(tit,rows)=>{
+    if(!rows.length)return'';
+    return`<div class="pdf-sec-title">${tit}</div>
+    <table class="pdf-table"><thead><tr>
+      <th>DESCRIPCIÓN</th><th style="text-align:center;white-space:nowrap">CANT.</th>
+      <th style="text-align:right;white-space:nowrap">VR. UNIT.</th><th style="text-align:right;white-space:nowrap">VR. TOTAL</th>
+    </tr></thead>
+    <tbody>${rows.map(r=>`
+      <tr><td>${r.desc}</td><td style="text-align:center;white-space:nowrap">${r.cant}</td><td style="text-align:right;white-space:nowrap">${fmt(r.u)}</td><td style="text-align:right;white-space:nowrap;font-weight:700">${fmt(r.t)}</td></tr>
+      ${r.notas?`<tr><td colspan="4" style="font-size:9px;color:#666;padding:2px 8px 5px;font-style:italic">NOTA: ${r.notas}</td></tr>`:''}`).join('')}
+    </tbody>
+    <tfoot><tr><td colspan="3" style="text-align:right;font-weight:700">SUBTOTAL</td><td style="text-align:right;font-weight:700">${fmt(rows.reduce((a,r)=>a+r.t,0))}</td></tr></tfoot></table>`;
+  };
+  document.getElementById('pdf-render').innerHTML=`
+  <div class="pdf-header">
+    <div><div class="pdf-logo">⚓ SERVIBUQUES</div></div>
+    <div style="text-align:right"><div class="pdf-tipo">CUENTA DE COBRO</div><div style="font-size:10px;color:#666;margin-top:3px">${fechaDoc}</div></div>
+  </div>
+  <div class="pdf-client-box">
+    <div><div class="lbl">CLIENTE / EMBARCACIÓN</div><div class="val">${cli||'TODOS'}</div></div>
+    <div><div class="lbl">CIUDAD</div><div class="val">BUENAVENTURA</div></div>
+  </div>
+  ${sec('⚓ MUELLAJE',mL)}${sec('💧 SERVICIO DE AGUA',aL)}${sec('⚡ SERVICIO DE ENERGÍA',eL)}
+  ${sec('🚗 VEHÍCULOS',vL)}${sec('📦 BODEGAJE',bL)}${sec('🏖️ SERVICIO DE PLAYA',pL)}${sec('🏢 ARRIENDOS',arL)}
+  <div class="pdf-grand"><span>TOTAL A PAGAR</span><span>${fmt(grand)}</span></div>`;
+  document.getElementById('pdf-area').style.display='block';
+  document.body.style.overflow='hidden';
+  document.getElementById('pdf-msg').textContent='';
+};
+
+// ── RENDER ALL ──
+function renderAll(){
+  renderDashboard();renderMuellaje();renderEnergia();renderAgua();
+  renderBodegaje();renderVehiculos();renderPlaya();renderArriendos();
+  renderFacturaClients();renderAdmin();
+}
+
+// ── BACK BUTTON — prevent exit from PWA ──
+history.pushState(null,'',location.href);
+window.addEventListener('popstate',()=>{
+  history.pushState(null,'',location.href);
+  // Go back to dashboard if on a sub-tab, otherwise stay
+  const activeTab=document.querySelector('.tab.active');
+  if(activeTab&&activeTab.getAttribute('onclick')!=="showTab('dashboard')"){
+    showTab('dashboard');
+  }
+});
+
+// ── PWA MANIFEST ──
+const manifest={name:'SERVIBUQUES',short_name:'SERVIBUQUES',start_url:'./',display:'standalone',background_color:'#1E3A5F',theme_color:'#1E3A5F',orientation:'portrait',icons:[{src:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%231E3A5F"/><text y="75" x="10" font-size="75">⚓</text></svg>',sizes:'512x512',type:'image/svg+xml'}]};
+const blob=new Blob([JSON.stringify(manifest)],{type:'application/json'});
+document.getElementById('pwa-manifest').href=URL.createObjectURL(blob);
+
+// ── INIT ──
+document.getElementById('login-sync-status').textContent='● CONECTADO A FIREBASE';
+document.getElementById('login-sync-status').style.color='#22C55E';
+populateUsers();setSynced();
+
+(async()=>{
+  try{
+    const embDoc=await getDoc(doc(db,'_config','embarcaciones'));
+    if(embDoc.exists()&&embDoc.data().lista)CFG.embarcaciones=embDoc.data().lista;
+    const usrDoc=await getDoc(doc(db,'_config','usuarios'));
+    if(usrDoc.exists()&&usrDoc.data().lista)CFG.usuarios=usrDoc.data().lista;
+    populateUsers();
+  }catch(e){console.warn('offline init',e);setOffline();}
+})();
+</script>
+</body>
+</html>
