@@ -424,6 +424,13 @@ input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:var(--te
 
 <div class="section" id="sec-admin">
   <div class="section-header"><div class="section-title">ADMINISTRACIÓN</div></div>
+
+  <!-- EXPORTAR -->
+  <div class="card" style="padding:16px;margin-bottom:12px;background:#F0FDF4;border-color:var(--green)">
+    <div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:var(--green);margin-bottom:8px">💾 COPIA DE SEGURIDAD</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:12px;font-weight:600">DESCARGA TODOS LOS REGISTROS EN UN ARCHIVO EXCEL. RECOMENDADO HACERLO REGULARMENTE.</div>
+    <button class="btn btn-primary" style="background:var(--green)" onclick="exportarExcel()">📥 EXPORTAR TODO A EXCEL</button>
+  </div>
   <div class="card" style="padding:16px;margin-bottom:12px">
     <div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:var(--navy);margin-bottom:10px">⚓ EMBARCACIONES / CLIENTES</div>
     <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
@@ -460,6 +467,7 @@ input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:var(--te
 
 <!-- LIBRARIES -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <!-- FIREBASE -->
 <script type="module">
@@ -1194,7 +1202,64 @@ function descargarImg(canvas){
 document.getElementById('btn-close-pdf').addEventListener('click',closePDF);
 document.getElementById('btn-wa').addEventListener('click',compartirPDF);
 
-// ── FACTURA CLIENTS ──
+// ── EXPORTAR A EXCEL ──
+window.exportarExcel=()=>{
+  try{
+    const wb=XLSX.utils.book_new();
+    // Muellaje
+    const mData=[['CLIENTE','FECHA DESDE','FECHA HASTA','DÍAS','TARIFA/DÍA','SUBTOTAL','NOTAS']];
+    DB.muellaje.filter(r=>!r._isClosingRecord).forEach(r=>{
+      const{dias,sub}=calcMuellaje(r);
+      mData.push([r.cliente,r.desde||'',r.hasta||'EN MUELLE',dias||'',r.tarifa||0,sub||0,r.notas||'']);
+    });
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(mData),'MUELLAJE');
+    // Energía
+    const eData=[['CLIENTE','VOLTAJE','LÍNEA','FECHA DESDE','FECHA HASTA','TARIFA/H','HORAS','SUBTOTAL','NOTAS']];
+    DB.energia.filter(r=>!r._isClosingRecord).forEach(r=>{
+      const{horas,sub}=calcEnergia(r);
+      eData.push([r.cliente,r.volt||'',r.linea||'',r.desde||'',r.hasta||'ACTIVO',r.tarifa||0,horas||'',sub||0,r.notas||'']);
+    });
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(eData),'ENERGÍA');
+    // Agua
+    const aData=[['CLIENTE','FECHA DESDE','FECHA HASTA','TARIFA','SUBTOTAL','NOTAS']];
+    DB.agua.filter(r=>!r._isClosingRecord).forEach(r=>{
+      const{sub}=calcAgua(r);
+      aData.push([r.cliente,r.desde||'',r.hasta||'ACTIVO',r.tarifa||0,sub||0,r.notas||'']);
+    });
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(aData),'AGUA');
+    // Bodegaje
+    const bData=[['CLIENTE','MERCANCÍA','FECHA DESDE','FECHA HASTA','DÍAS','TARIFA/DÍA','SUBTOTAL','NOTAS']];
+    DB.bodegaje.filter(r=>!r._isClosingRecord).forEach(r=>{
+      const{dias,sub}=calcBodegaje(r);
+      bData.push([r.cliente,r.mercancia||'',r.desde||'',r.hasta||'EN BODEGA',dias||'',r.tarifa||0,sub||0,r.notas||'']);
+    });
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(bData),'BODEGAJE');
+    // Vehículos
+    const vData=[['CLIENTE','TIPO','PLACA','MERCANCÍA','AUTORIZA','FECHA','VALOR','NOTAS']];
+    DB.vehiculos.forEach(r=>{
+      vData.push([r.cliente,r.tipo||'',r.placa||'',r.mercancia||'',r.autoriza||'',r.fecha||'',r.valor||0,r.notas||'']);
+    });
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(vData),'VEHÍCULOS');
+    // Astillero
+    const pData=[['CLIENTE','FECHA DESDE','FECHA HASTA','DÍAS','TARIFA/DÍA','SUBTOTAL','NOTAS']];
+    (DB.playa||[]).filter(r=>!r._isClosingRecord).forEach(r=>{
+      const{dias,sub}=calcPlaya(r);
+      pData.push([r.cliente,r.desde||'',r.hasta||'EN ASTILLERO',dias||'',r.tarifa||0,sub||0,r.notas||'']);
+    });
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(pData),'ASTILLERO');
+    // Arriendos
+    const arData=[['CLIENTE','TIPO','DESDE','HASTA','MESES','VALOR/MES','ENERGÍA','SUBTOTAL','NOTAS']];
+    (DB.arriendos||[]).forEach(r=>{
+      const{meses,sub}=calcArriendo(r);
+      arData.push([r.cliente,r.tipo||'',r.desde||'',r.hasta||'',meses||'',r.valor||0,r.energia||0,sub||0,r.notas||'']);
+    });
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(arData),'ARRIENDOS');
+    // Save
+    const fecha=new Date().toLocaleDateString('es-CO').replace(/\//g,'-');
+    XLSX.writeFile(wb,`SERVIBUQUES_BACKUP_${fecha}.xlsx`);
+    toast('✓ EXCEL DESCARGADO','ok');
+  }catch(e){toast('ERROR AL EXPORTAR: '+e.message,'err');}
+};
 function renderFacturaClients(){
   const s=document.getElementById('f-cli');
   if(!s)return;
