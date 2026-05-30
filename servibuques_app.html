@@ -578,21 +578,29 @@ function applyTarifas(){
 
 // ── REALTIME LISTENERS ──
 function migrateRecord(r, tabla){
-  // Backward compatibility: map old model to new desde/hasta model
-  if(!r.desde && r.fecha){
-    r.desde = r.fecha;
+  // Backward compatibility: map old model fields to new desde/hasta model
+  // Copy fecha to desde if desde is missing
+  if(!r.desde){
+    r.desde = r.fecha || r._ts ? (r.fecha || new Date(r._ts).toISOString().slice(0,16)) : '';
   }
+  // For closing events, set hasta = fecha
   if(!r.hasta && r.accion){
-    // Map old ZARPA/DESCONECTA/SALE events to hasta field
     if(tabla==='muellaje' && r.accion==='ZARPA') r.hasta = r.fecha;
     if(tabla==='energia' && r.accion==='DESCONECTA') r.hasta = r.fecha;
     if(tabla==='agua' && r.accion==='DESCONECTA') r.hasta = r.fecha;
     if(tabla==='bodegaje' && (r.accion==='SALE'||r.accion==='CORTE')) r.hasta = r.fecha;
     if(tabla==='playa' && r.accion==='SALE DE PLAYA') r.hasta = r.fecha;
+    // Opening events: hasta stays empty (open)
   }
   // For energia, add linea if missing
   if(tabla==='energia' && !r.linea){
     r.linea = r.volt==='220' ? 'LÍNEA ÚNICA' : 'LÍNEA 1';
+  }
+  // Filter out old "closing" records (ZARPA, DESCONECTA, SALE) that are now redundant
+  // They will be represented by the hasta field on the opening record
+  // We mark them so renderX can skip them
+  if(r.accion==='ZARPA'||r.accion==='DESCONECTA'||(r.accion==='SALE'&&tabla==='bodegaje')||r.accion==='SALE DE PLAYA'||(r.accion==='CORTE'&&tabla==='bodegaje')){
+    r._isClosingRecord = true;
   }
   return r;
 }
@@ -600,13 +608,23 @@ function migrateRecord(r, tabla){
 function startListeners(){
   unsubscribers.forEach(u=>u());
   unsubscribers=[];
+  // Show loading
+  const dash=document.getElementById('dash-tbody');
+  if(dash)dash.innerHTML='<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted);font-weight:700">⏳ CARGANDO DATOS...</td></tr>';
+
   const tablas=['muellaje','energia','agua','bodegaje','vehiculos','playa','arriendos'];
+  let loaded=0;
   tablas.forEach(tabla=>{
     const unsub=onSnapshot(collection(db,tabla),snap=>{
-      DB[tabla]=snap.docs.map(d=>migrateRecord(d.data(),tabla));
+      DB[tabla]=snap.docs.map(d=>migrateRecord({...d.data()},tabla));
+      loaded++;
       renderAll();
       setSynced();
-    },err=>{setOffline();console.warn(tabla,err);});
+    },err=>{
+      setOffline();
+      console.warn(tabla,err);
+      toast('ERROR CARGANDO '+tabla.toUpperCase(),'err');
+    });
     unsubscribers.push(unsub);
   });
   // Config listener
