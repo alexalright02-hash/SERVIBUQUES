@@ -577,13 +577,33 @@ function applyTarifas(){
 }
 
 // ── REALTIME LISTENERS ──
+function migrateRecord(r, tabla){
+  // Backward compatibility: map old model to new desde/hasta model
+  if(!r.desde && r.fecha){
+    r.desde = r.fecha;
+  }
+  if(!r.hasta && r.accion){
+    // Map old ZARPA/DESCONECTA/SALE events to hasta field
+    if(tabla==='muellaje' && r.accion==='ZARPA') r.hasta = r.fecha;
+    if(tabla==='energia' && r.accion==='DESCONECTA') r.hasta = r.fecha;
+    if(tabla==='agua' && r.accion==='DESCONECTA') r.hasta = r.fecha;
+    if(tabla==='bodegaje' && (r.accion==='SALE'||r.accion==='CORTE')) r.hasta = r.fecha;
+    if(tabla==='playa' && r.accion==='SALE DE PLAYA') r.hasta = r.fecha;
+  }
+  // For energia, add linea if missing
+  if(tabla==='energia' && !r.linea){
+    r.linea = r.volt==='220' ? 'LÍNEA ÚNICA' : 'LÍNEA 1';
+  }
+  return r;
+}
+
 function startListeners(){
   unsubscribers.forEach(u=>u());
   unsubscribers=[];
   const tablas=['muellaje','energia','agua','bodegaje','vehiculos','playa','arriendos'];
   tablas.forEach(tabla=>{
     const unsub=onSnapshot(collection(db,tabla),snap=>{
-      DB[tabla]=snap.docs.map(d=>d.data());
+      DB[tabla]=snap.docs.map(d=>migrateRecord(d.data(),tabla));
       renderAll();
       setSynced();
     },err=>{setOffline();console.warn(tabla,err);});
