@@ -2,1323 +2,1167 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
 <meta name="theme-color" content="#1E3A5F">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="SERVIBUQUES">
 <link rel="manifest" id="pwa-manifest">
 <title>SERVIBUQUES</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-:root{--bg:#F0F4F8;--bg2:#E2E8F0;--card:#FFFFFF;--border:#CBD5E1;--navy:#1E3A5F;--teal:#0891B2;--teal2:#0E7490;--green:#059669;--red:#DC2626;--amber:#D97706;--muted:#64748B;--text:#0F172A;--text2:#334155;}
+:root{--bg:#F0F4F8;--card:#fff;--border:#CBD5E1;--navy:#1E3A5F;--teal:#0891B2;--teal2:#0E7490;--green:#059669;--red:#DC2626;--amber:#D97706;--muted:#64748B;--text:#0F172A;}
 *{margin:0;padding:0;box-sizing:border-box;}
-html{font-size:14px;color-scheme:light only;}
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;text-transform:uppercase;}
-@media(prefers-color-scheme:dark){
-  :root{--bg:#F0F4F8;--bg2:#E2E8F0;--card:#FFFFFF;--border:#CBD5E1;--navy:#1E3A5F;--teal:#0891B2;--teal2:#0E7490;--green:#059669;--red:#DC2626;--amber:#D97706;--muted:#64748B;--text:#0F172A;--text2:#334155;}
-  body{background:#F0F4F8!important;color:#0F172A!important;}
-}
-input,textarea,select{text-transform:uppercase!important;}
-input::placeholder{text-transform:uppercase;}
-
-/* SYNC INDICATOR */
-#sync-bar{position:fixed;top:0;left:0;right:0;height:3px;background:var(--teal);z-index:9998;transform:scaleX(0);transform-origin:left;transition:transform .3s;}
-#sync-bar.loading{transform:scaleX(0.7);}
-#sync-bar.done{transform:scaleX(1);transition:transform .1s;}
-
+html{color-scheme:light only;}
+body{font-family:Inter,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;text-transform:uppercase;font-size:13px;}
+input,select,textarea{text-transform:uppercase!important;font-family:Inter,sans-serif;}
 /* LOGIN */
-#login-screen{position:fixed;inset:0;background:var(--navy);z-index:9999;display:flex;align-items:center;justify-content:center;}
-.login-box{background:white;border-radius:16px;padding:36px;width:320px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.4);}
-.login-logo{font-family:'Bebas Neue',cursive;font-size:28px;letter-spacing:4px;color:var(--teal);margin-bottom:2px;}
-.login-sub{font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:6px;}
-.login-sync{font-size:10px;color:var(--green);font-weight:700;margin-bottom:18px;}
-.login-box select,.login-box input{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--text);margin-bottom:12px;outline:none;background:#F8FAFC;}
-.login-box select:focus,.login-box input:focus{border-color:var(--teal);}
-.login-btn{width:100%;background:var(--teal);color:white;border:none;border-radius:8px;padding:11px;font-size:13px;font-weight:700;letter-spacing:1px;cursor:pointer;}
-.login-btn:hover{background:var(--teal2);}
-.login-err{color:var(--red);font-size:11px;margin-top:8px;min-height:14px;}
-.role-badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:9px;font-weight:700;letter-spacing:1px;}
-.role-admin{background:#FEF3C7;color:#92400E;border:1px solid #F59E0B;}
-.role-user{background:#DBEAFE;color:#1E40AF;border:1px solid #93C5FD;}
-
+#LS{position:fixed;inset:0;background:var(--navy);z-index:9999;display:flex;align-items:center;justify-content:center;}
+.LB{background:#fff;border-radius:14px;padding:32px;width:300px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4);}
+.LB img{height:56px;margin-bottom:8px;}
+.LS2{font-size:9px;letter-spacing:2px;color:var(--muted);margin-bottom:6px;}
+.LST{font-size:10px;font-weight:700;color:var(--green);margin-bottom:16px;min-height:16px;}
+.LB select,.LB input{width:100%;border:1.5px solid var(--border);border-radius:7px;padding:9px 11px;font-size:13px;margin-bottom:10px;outline:none;}
+.LB select:focus,.LB input:focus{border-color:var(--teal);}
+.LBT{width:100%;background:var(--teal);color:#fff;border:none;border-radius:7px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:1px;}
+.LBT:hover{background:var(--teal2);}
+.LBE{color:var(--red);font-size:11px;margin-top:6px;min-height:14px;}
 /* HEADER */
-header{position:sticky;top:0;z-index:100;background:var(--navy);padding:0 14px;display:flex;align-items:center;justify-content:space-between;height:52px;box-shadow:0 2px 8px rgba(0,0,0,0.2);}
-.logo{font-family:'Bebas Neue',cursive;font-size:21px;letter-spacing:3px;color:white;display:flex;align-items:center;gap:7px;}
-.logo em{color:#67E8F9;font-style:normal;}
-.header-right{display:flex;align-items:center;gap:8px;}
-.header-user{font-size:10px;color:#94A3B8;text-align:right;line-height:1.5;}
-.header-user b{color:#67E8F9;}
-.btn-logout{font-size:10px;background:transparent;border:1px solid rgba(239,68,68,0.5);color:#FCA5A5;border-radius:5px;padding:4px 9px;cursor:pointer;}
-.sync-dot{width:8px;height:8px;border-radius:50%;background:#6B7280;flex-shrink:0;}
-.sync-dot.online{background:#22C55E;box-shadow:0 0 6px #22C55E;}
-.sync-dot.syncing{background:var(--amber);animation:pulse .8s infinite;}
-@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
-
+header{position:sticky;top:0;z-index:100;background:var(--navy);padding:0 12px;display:flex;align-items:center;justify-content:space-between;height:50px;box-shadow:0 2px 8px rgba(0,0,0,.2);}
+.HL img{height:34px;}
+.HR{display:flex;align-items:center;gap:8px;}
+.HU{font-size:10px;color:#94A3B8;text-align:right;line-height:1.5;}
+.HU b{color:#67E8F9;}
+.RB{display:inline-block;padding:1px 8px;border-radius:8px;font-size:9px;font-weight:700;}
+.RA{background:#FEF3C7;color:#92400E;border:1px solid #F59E0B;}
+.RV{background:#DBEAFE;color:#1E40AF;border:1px solid #93C5FD;}
+.BLO{font-size:10px;background:transparent;border:1px solid rgba(239,68,68,.5);color:#FCA5A5;border-radius:5px;padding:3px 8px;cursor:pointer;}
+.SD{width:8px;height:8px;border-radius:50%;background:#6B7280;}
+.SD.on{background:#22C55E;box-shadow:0 0 5px #22C55E;}
 /* NAV */
-nav{background:white;border-bottom:2px solid var(--border);display:flex;overflow-x:auto;position:sticky;top:52px;z-index:90;box-shadow:0 1px 4px rgba(0,0,0,0.08);}
+nav{background:#fff;border-bottom:2px solid var(--border);display:flex;overflow-x:auto;position:sticky;top:50px;z-index:90;}
 nav::-webkit-scrollbar{display:none;}
-.tab{font-size:10px;font-weight:700;letter-spacing:1.5px;padding:0 13px;height:42px;border:none;background:none;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;transition:all .2s;display:flex;align-items:center;gap:5px;}
-.tab:hover{color:var(--text);}
-.tab.active{color:var(--teal);border-bottom-color:var(--teal);background:#F0F9FF;}
-.tab .badge{background:var(--teal);color:white;border-radius:10px;padding:1px 6px;font-size:9px;font-weight:700;}
-
+.TB{font-size:10px;font-weight:700;letter-spacing:1px;padding:0 12px;height:40px;border:none;background:none;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;display:flex;align-items:center;gap:4px;}
+.TB.act{color:var(--teal);border-bottom-color:var(--teal);background:#F0F9FF;}
+.TB .BG{background:var(--teal);color:#fff;border-radius:8px;padding:1px 5px;font-size:8px;font-weight:700;}
+.AON{display:none;}
 /* MAIN */
-main{padding:14px;max-width:100%;}
-.section{display:none;}.section.active{display:block;}
-.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:nowrap;gap:12px;}
-.section-title{font-family:Georgia,'Times New Roman',serif;font-size:17px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:8px;white-space:nowrap;}
-.section-title::before{content:'';width:4px;height:18px;background:var(--teal);border-radius:2px;flex-shrink:0;}
-
+main{padding:12px;}
+.SEC{display:none;}.SEC.act{display:block;}
+.SH{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:nowrap;gap:10px;}
+.ST{font-size:16px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:7px;}
+.ST::before{content:"";width:3px;height:16px;background:var(--teal);border-radius:2px;flex-shrink:0;}
 /* DASHBOARD */
-.dash-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px;}
-@media(min-width:600px){.dash-grid{grid-template-columns:repeat(3,1fr);}}
-@media(min-width:900px){.dash-grid{grid-template-columns:repeat(5,1fr);}}
-.stat-card{background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:14px;position:relative;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.05);}
-.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--teal);}
-.stat-label{font-size:9px;letter-spacing:1.5px;color:var(--muted);margin-bottom:6px;font-weight:600;}
-.stat-value{font-family:'Bebas Neue',cursive;font-size:32px;color:var(--navy);line-height:1;}
-.stat-sub{font-size:10px;color:var(--muted);margin-top:2px;}
-
-/* CARD / TABLE */
-.card{background:var(--card);border:1.5px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,0.05);}
-.table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
-table{width:100%;border-collapse:collapse;min-width:480px;}
+.DG{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px;}
+@media(min-width:600px){.DG{grid-template-columns:repeat(4,1fr);}}
+.SC{background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:12px;position:relative;overflow:hidden;}
+.SC::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:var(--teal);}
+.SL{font-size:8px;letter-spacing:1.5px;color:var(--muted);margin-bottom:5px;font-weight:600;}
+.SV{font-size:28px;font-weight:700;color:var(--navy);line-height:1;}
+.SS{font-size:9px;color:var(--muted);margin-top:2px;}
+/* CARDS/TABLES */
+.CD{background:#fff;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:12px;}
+.TS{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+table{width:100%;border-collapse:collapse;min-width:400px;}
 thead tr{background:#F1F5F9;}
-th{font-size:8px;letter-spacing:2px;color:var(--teal2);font-weight:700;padding:9px 11px;text-align:left;border-bottom:1.5px solid var(--border);white-space:nowrap;}
-td{padding:8px 11px;color:var(--text2);border-bottom:1px solid var(--bg2);vertical-align:middle;font-size:12px;}
+th{font-size:8px;letter-spacing:1.5px;color:var(--teal2);font-weight:700;padding:9px 10px;text-align:left;border-bottom:1.5px solid var(--border);white-space:nowrap;}
+td{padding:8px 10px;border-bottom:1px solid #F0F4F8;font-size:11px;vertical-align:middle;}
 tbody tr:last-child td{border-bottom:none;}
 tbody tr:hover{background:#F8FAFC;}
-
 /* BADGES */
-.bs{font-size:9px;font-weight:700;padding:2px 8px;border-radius:12px;display:inline-block;letter-spacing:.5px;white-space:nowrap;}
-.bg-green{background:#D1FAE5;color:#065F46;border:1px solid #6EE7B7;}
-.bg-amber{background:#FEF3C7;color:#78350F;border:1px solid #FCD34D;}
-.bg-red{background:#FEE2E2;color:#7F1D1D;border:1px solid #FCA5A5;}
-.bg-teal{background:#CFFAFE;color:#155E75;border:1px solid #67E8F9;}
-.bg-gray{background:#F1F5F9;color:#475569;border:1px solid #CBD5E1;}
-.bg-blue{background:#DBEAFE;color:#1E3A8A;border:1px solid #93C5FD;}
-
+.BS{font-size:8px;font-weight:700;padding:2px 7px;border-radius:10px;display:inline-block;white-space:nowrap;}
+.BG{background:#D1FAE5;color:#065F46;border:1px solid #6EE7B7;}
+.BA{background:#FEF3C7;color:#78350F;border:1px solid #FCD34D;}
+.BR{background:#FEE2E2;color:#7F1D1D;border:1px solid #FCA5A5;}
+.BT{background:#CFFAFE;color:#155E75;border:1px solid #67E8F9;}
+.BM{background:#F1F5F9;color:#475569;border:1px solid #CBD5E1;}
+.BB{background:#DBEAFE;color:#1E3A8A;border:1px solid #93C5FD;}
 /* BUTTONS */
-.btn{font-size:11px;font-weight:700;letter-spacing:1px;padding:8px 15px;border-radius:7px;border:none;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:5px;}
-.btn-primary{background:var(--teal);color:white;}
-.btn-primary:hover{background:var(--teal2);}
-.btn-secondary{background:white;color:var(--muted);border:1.5px solid var(--border);}
-.btn-sm{padding:3px 8px;font-size:9px;}
-.btn-edit{background:#FEF3C7;color:#92400E;border:1px solid #FCD34D;}
-.btn-del{background:#FEE2E2;color:#991B1B;border:1px solid #FCA5A5;}
-.btn-pdf{background:#EDE9FE;color:#4C1D95;border:1px solid #C4B5FD;}
-.btn-row{display:flex;gap:4px;align-items:center;}
-
+.BN{font-size:11px;font-weight:700;letter-spacing:.5px;padding:7px 14px;border-radius:6px;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:4px;}
+.BP{background:var(--teal);color:#fff;}.BP:hover{background:var(--teal2);}
+.BS2{background:#fff;color:var(--muted);border:1.5px solid var(--border);}
+.BNS{padding:3px 7px;font-size:9px;}
+.BE{background:#FEF3C7;color:#92400E;border:1px solid #FCD34D;}
+.BD{background:#FEE2E2;color:#991B1B;border:1px solid #FCA5A5;}
+.BR2{display:flex;gap:3px;align-items:center;}
 /* FORM */
-.field{margin-bottom:4px;}
-.field label{display:block;font-size:9px;font-weight:700;letter-spacing:1.5px;color:var(--muted);margin-bottom:4px;}
-.field input,.field select,.field textarea{width:100%;border:1.5px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;outline:none;background:white;transition:border-color .15s;}
-.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(8,145,178,0.1);}
-.field textarea{resize:vertical;min-height:58px;}
-.field-note{font-size:10px;color:var(--amber);margin-top:3px;font-weight:600;}
-.tarifa-fixed{background:#F0F9FF;border:1.5px solid #BAE6FD;border-radius:7px;padding:8px 10px;font-size:13px;color:var(--teal2);font-weight:700;}
-.form-grid{display:grid;gap:11px;margin-bottom:14px;}
-.g2{grid-template-columns:1fr 1fr;}
-.g3{grid-template-columns:1fr 1fr 1fr;}
-@media(max-width:480px){.g2,.g3{grid-template-columns:1fr;}}
-
+.FL{display:block;font-size:9px;font-weight:700;letter-spacing:1px;color:var(--muted);margin-bottom:3px;}
+.FI{width:100%;border:1.5px solid var(--border);border-radius:6px;padding:7px 10px;font-size:13px;outline:none;background:#fff;}
+.FI:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(8,145,178,.1);}
+textarea.FI{resize:vertical;min-height:55px;}
+.FN{font-size:10px;color:var(--amber);margin-top:2px;font-weight:600;}
+.TF{background:#F0F9FF;border:1.5px solid #BAE6FD;border-radius:6px;padding:7px 10px;font-size:13px;color:var(--teal2);font-weight:700;}
+.FG{display:grid;gap:10px;margin-bottom:12px;}
+.G2{grid-template-columns:1fr 1fr;}
+@media(max-width:460px){.G2{grid-template-columns:1fr;}}
 /* MODAL */
-.modal-bg{display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);z-index:500;align-items:flex-start;justify-content:center;overflow-y:auto;padding:16px 12px;}
-.modal-bg.open{display:flex;}
-.modal{background:white;border-radius:14px;padding:20px;width:100%;max-width:520px;margin:auto;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
-.modal-title{font-family:Georgia,serif;font-size:17px;font-weight:700;color:var(--navy);margin-bottom:16px;}
-.modal-actions{display:flex;gap:8px;margin-top:16px;justify-content:flex-end;flex-wrap:wrap;}
-
-/* ALERTS */
-.alert{position:fixed;bottom:14px;left:50%;transform:translateX(-50%) translateY(100px);z-index:9000;background:var(--navy);color:white;border-radius:10px;padding:11px 18px;font-size:12px;font-weight:600;letter-spacing:.5px;max-width:92vw;transition:transform .3s;box-shadow:0 8px 24px rgba(0,0,0,0.3);text-align:center;}
-.alert.show{transform:translateX(-50%) translateY(0);}
-.alert.err{background:var(--red);}
-.alert.ok{background:var(--green);}
-.alert.warn{background:var(--amber);}
-
-/* MISC */
-.warn-box{background:#FFFBEB;border:1.5px solid #FCD34D;border-radius:8px;padding:9px 13px;font-size:11px;color:#78350F;font-weight:600;margin-bottom:10px;}
-.mono{font-family:monospace;}
-.muted{color:var(--muted);}
-.val-ok{color:var(--teal2);font-weight:700;}
-.empty-state{text-align:center;padding:32px;color:var(--muted);}
-.empty-state .ico{font-size:26px;margin-bottom:8px;}
-.empty-state p{font-size:11px;letter-spacing:1px;}
-.admin-only{display:none;}
-.photo-preview{width:72px;height:54px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;}
-
+.MB{display:none;position:fixed;inset:0;background:rgba(15,23,42,.65);z-index:500;align-items:flex-start;justify-content:center;overflow-y:auto;padding:14px 10px;}
+.MB.op{display:flex;}
+.MD{background:#fff;border-radius:12px;padding:18px;width:100%;max-width:500px;margin:auto;}
+.MT{font-size:16px;font-weight:700;color:var(--navy);margin-bottom:14px;}
+.MA{display:flex;gap:7px;margin-top:14px;justify-content:flex-end;flex-wrap:wrap;}
+/* ALERT */
+.AL{position:fixed;bottom:14px;left:50%;transform:translateX(-50%) translateY(100px);z-index:9000;background:var(--navy);color:#fff;border-radius:8px;padding:10px 16px;font-size:11px;font-weight:700;max-width:90vw;transition:transform .3s;box-shadow:0 8px 24px rgba(0,0,0,.3);text-align:center;}
+.AL.sh{transform:translateX(-50%) translateY(0);}
+.AL.er{background:var(--red);}
+.AL.ok{background:var(--green);}
+.AL.wa{background:var(--amber);}
+/* FILTER/BULK */
+.FR{display:flex;gap:6px;padding:7px 10px;background:#F8FAFC;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.FR select{border:1px solid var(--border);border-radius:4px;padding:3px 6px;font-size:10px;background:#fff;}
+.BB2{display:none;align-items:center;gap:6px;padding:7px 10px;background:#FEF3C7;border-bottom:1px solid #FCD34D;font-size:11px;font-weight:700;color:#78350F;}
+.BB2.vi{display:flex;}
+input[type=checkbox]{width:14px;height:14px;cursor:pointer;accent-color:var(--teal);}
 /* FACTURA */
-.factura-panel{background:#F0F9FF;border:2px solid var(--teal);border-radius:12px;padding:18px;margin-top:12px;}
-.frow{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;}
-.frow:last-child{border-bottom:none;}
-.ftotal{font-family:'Bebas Neue',cursive;font-size:28px;color:var(--teal2);}
-
-/* FILTER & BULK */
-.filter-row{display:flex;gap:8px;padding:8px 11px;background:#F8FAFC;border-bottom:1px solid var(--border);flex-wrap:wrap;align-items:center;}
-.filter-row select{border:1px solid var(--border);border-radius:5px;padding:4px 7px;font-size:10px;color:var(--text);background:white;font-weight:600;}
-.bulk-bar{display:none;align-items:center;gap:8px;padding:8px 11px;background:#FEF3C7;border-bottom:1px solid #FCD34D;font-size:11px;font-weight:700;color:#78350F;}
-.bulk-bar.visible{display:flex;}
-input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:var(--teal);}
-.photo-preview{width:72px;height:54px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;}
-
+.FP{background:#F0F9FF;border:2px solid var(--teal);border-radius:10px;padding:16px;margin-top:10px;}
+.FW{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.FW:last-child{border-bottom:none;}
+.FT{font-size:24px;font-weight:900;color:var(--teal2);}
 /* PDF */
-#pdf-area{display:none;position:fixed;inset:0;background:#e5e7eb;z-index:8000;overflow-y:auto;padding:58px 10px 24px;}
-#pdf-render{background:white;max-width:680px;margin:0 auto;padding:24px 24px 32px;font-family:'Inter',sans-serif;color:#000;box-shadow:0 4px 24px rgba(0,0,0,0.12);}
-.pdf-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;border-bottom:2px solid #000;padding-bottom:10px;}
-.pdf-logo{font-size:19px;font-weight:900;letter-spacing:2px;}
-.pdf-tipo{font-size:12px;font-weight:700;border:2px solid #000;padding:3px 10px;border-radius:4px;}
-.pdf-client-box{border:1px solid #ccc;border-radius:5px;padding:9px 12px;margin-bottom:12px;display:grid;grid-template-columns:1fr 1fr;gap:5px;font-size:11px;}
-.pdf-client-box .lbl{font-size:8px;font-weight:700;letter-spacing:1px;color:#666;margin-bottom:1px;}
-.pdf-client-box .val{font-size:12px;font-weight:700;}
-.pdf-sec-title{font-weight:800;font-size:10px;letter-spacing:1px;margin-bottom:3px;margin-top:12px;color:#1E3A5F;border-left:3px solid #1E3A5F;padding-left:6px;}
-.pdf-table{width:100%;border-collapse:collapse;margin-bottom:8px;font-size:10px;}
-.pdf-table th{border:1px solid #1E3A5F;color:#1E3A5F;background:none;padding:5px 8px;text-align:left;font-size:9px;letter-spacing:.5px;}
-.pdf-table td{padding:4px 8px;border-bottom:1px solid #e2e8f0;vertical-align:top;}
-.pdf-table tfoot td{font-weight:700;border-top:1.5px solid #1E3A5F;border-bottom:none;}
-.pdf-grand{display:flex;justify-content:space-between;padding:8px 0;border-top:2px solid #000;font-size:16px;font-weight:900;margin-top:12px;}
-.pdf-btns{position:fixed;top:0;left:0;right:0;background:#1E3A5F;padding:8px 12px;display:flex;gap:8px;z-index:8001;align-items:center;}
-.pdf-btn{border:none;border-radius:7px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;}
-.pdf-btn-wa{background:#25D366;color:white;}
-.pdf-btn-close{background:#DC2626;color:white;}
-#pdf-msg{font-size:10px;color:#94A3B8;margin-left:4px;}
-
-/* NOTIF BANNER */
-#notif-banner{display:none;position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:var(--navy);color:white;border-radius:12px;padding:12px 18px;font-size:12px;font-weight:600;z-index:400;box-shadow:0 8px 24px rgba(0,0,0,0.3);text-align:center;max-width:90vw;}
-#notif-banner button{background:var(--teal);color:white;border:none;border-radius:6px;padding:5px 12px;margin-top:8px;font-size:11px;font-weight:700;cursor:pointer;display:block;width:100%;}
+#PA{display:none;position:fixed;inset:0;background:#e5e7eb;z-index:8000;overflow-y:auto;padding:55px 8px 20px;}
+#PR{background:#fff;max-width:650px;margin:0 auto;padding:20px 20px 28px;font-family:Inter,sans-serif;color:#000;box-shadow:0 4px 20px rgba(0,0,0,.1);}
+.PBT{position:fixed;top:0;left:0;right:0;background:#1E3A5F;padding:7px 12px;display:flex;gap:7px;z-index:8001;align-items:center;}
+.PB{border:none;border-radius:6px;padding:6px 13px;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:4px;}
+.PC{background:#DC2626;color:#fff;}
+.PW{background:#25D366;color:#fff;}
+#PM{font-size:10px;color:#94A3B8;margin-left:4px;}
+.PH{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;border-bottom:2px solid #000;padding-bottom:8px;}
+.PLO{font-size:17px;font-weight:900;letter-spacing:1px;}
+.PTP{font-size:11px;font-weight:700;border:2px solid #000;padding:3px 9px;border-radius:3px;}
+.PCB{border:1px solid #ccc;border-radius:5px;padding:8px 10px;margin-bottom:10px;display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:11px;}
+.PCB .pl{font-size:8px;font-weight:700;letter-spacing:1px;color:#666;margin-bottom:1px;}
+.PCB .pv{font-size:12px;font-weight:700;}
+.PST{font-weight:800;font-size:10px;letter-spacing:1px;margin:10px 0 3px;color:#1E3A5F;border-left:3px solid #1E3A5F;padding-left:5px;}
+.PT{width:100%;border-collapse:collapse;font-size:10px;margin-bottom:6px;}
+.PT th{border:1px solid #1E3A5F;color:#1E3A5F;background:none;padding:4px 7px;text-align:left;font-size:8px;}
+.PT td{padding:3px 7px;border-bottom:1px solid #e2e8f0;}
+.PT tfoot td{font-weight:700;border-top:1.5px solid #1E3A5F;border-bottom:none;}
+.PG{display:flex;justify-content:space-between;padding:7px 0;border-top:2px solid #000;font-size:15px;font-weight:900;margin-top:10px;}
+/* MISC */
+.MO{font-family:monospace;}
+.MU{color:var(--muted);}
+.VO{color:var(--teal2);font-weight:700;}
+.ES{text-align:center;padding:28px;color:var(--muted);}
+.ES .EI{font-size:24px;margin-bottom:7px;}
+.ES p{font-size:10px;letter-spacing:1px;}
+.WB{background:#FFFBEB;border:1.5px solid #FCD34D;border-radius:7px;padding:8px 12px;font-size:10px;color:#78350F;font-weight:600;margin-bottom:8px;}
 </style>
 </head>
 <body>
-<div id="sync-bar"></div>
-
 <!-- PDF -->
-<div id="pdf-area">
-  <div class="pdf-btns">
-    <button class="pdf-btn pdf-btn-close" id="btn-close-pdf">✕ CERRAR</button>
-    <button class="pdf-btn pdf-btn-wa" id="btn-wa">📲 ENVIAR A WHATSAPP</button>
-    <span id="pdf-msg"></span>
+<div id="PA">
+  <div class="PBT">
+    <button class="PB PC" id="BCP">✕ CERRAR</button>
+    <button class="PB PW" id="BWP">📲 ENVIAR WHATSAPP</button>
+    <span id="PM"></span>
   </div>
-  <div id="pdf-render"></div>
+  <div id="PR"></div>
 </div>
-
-<!-- NOTIF BANNER -->
-<div id="notif-banner">
-  📲 ACTIVAR NOTIFICACIONES PARA RECIBIR ALERTAS DE NUEVOS REGISTROS
-  <button onclick="pedirNotificaciones()">ACTIVAR NOTIFICACIONES</button>
-</div>
-
 <!-- LOGIN -->
-<div id="login-screen">
-  <div class="login-box">
-    <div style="display:flex;justify-content:center;margin-bottom:8px"><img src="data:image/png;base64,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" style="height:60px;width:auto;object-fit:contain" alt="SERVIBUQUES"></div>
-    <div class="login-sub">CONTROL DE MUELLE · BUENAVENTURA</div>
-    <div class="login-sync" id="login-sync-status">● CONECTANDO...</div>
-    <select id="li-user"><option value="">— SELECCIONAR USUARIO —</option></select>
-    <div id="li-pass-wrap">
-      <input type="password" id="li-pass" placeholder="CONTRASEÑA" onkeydown="if(event.key==='Enter')doLogin()">
-    </div>
-    <button class="login-btn" onclick="doLogin()">INGRESAR →</button>
-    <div class="login-err" id="li-err"></div>
+<div id="LS">
+  <div class="LB">
+    <img src="data:image/png;base64,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" alt="SERVIBUQUES">
+    <div class="LS2">CONTROL DE MUELLE · BUENAVENTURA</div>
+    <div class="LST" id="LST">● CONECTANDO...</div>
+    <select id="LU"></select>
+    <div id="LPW"><input type="password" id="LP" placeholder="CONTRASEÑA"></div>
+    <button class="LBT" id="LBI">INGRESAR →</button>
+    <div class="LBE" id="LBE"></div>
   </div>
 </div>
-
-<div class="alert" id="toast"></div>
-<div class="modal-bg" id="modal-bg" onclick="if(event.target===this)closeModal()">
-  <div class="modal" id="modal-body"></div>
-</div>
-
+<div class="AL" id="TT"></div>
+<div class="MB" id="MB"><div class="MD" id="MBD"></div></div>
 <header>
-  <div class="logo"><img src="data:image/png;base64,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" height="38" style="height:38px;width:auto;object-fit:contain;display:block" alt="SERVIBUQUES"></div></div>
-  <div class="header-right">
-    <div class="sync-dot" id="sync-dot" title="ESTADO DE CONEXIÓN"></div>
-    <div class="header-user"><span id="h-role"></span><br><b id="h-name">—</b></div>
-    <button class="btn-logout" onclick="doLogout()">SALIR</button>
+  <div class="HL"><img src="data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCABwAKkDASIAAhEBAxEB/8QAHQAAAQQDAQEAAAAAAAAAAAAAAAMEBgcCBQgBCf/EAEYQAAEDAwIDBQUFBQYCCwAAAAECAwQABQYHERIhMRNBUWFxCBQigZEVMlKhsTNCYoKSFyMkcsHRU6IWJTRDRGNkhKOy8f/EABoBAAIDAQEAAAAAAAAAAAAAAAIEAAEDBQb/xAA7EQABAgQCBwUFBgcBAAAAAAABAAIDBBEhEjEFQVFhgZGhBhNxwdEUMrHh8BUiIzNCUhZDU2JykvGC/9oADAMBAAIRAxEAPwDsuiiiooiiiiooiiimdzuUO2s9rLeCPwp6qV6Cs4sVkJhfENANZRNY55wtFSnlJSZMeMjjkPNtJ8VqAql9S9d7FjilxRLAk9Ex44Dr5Pn3J+dQCFcNbdRVh/G8ZTZLe7924XZRCiPEBXM/JJFc1s/MTQrJwqt/c44W8K3PAJh0KFBNIz77Bc+g4ldHS8tszBIS8t8j/ho3H1NRy56rY9BJS9IhsEd0iY2g/Teqzh+znfrsO1znUu5y9+ao8McDfpzO30FSK2ezjpHA295gzrkodTJmLO/9HDRCR0hE/MmQ3cxlerj5IDMwG+7Cr/k6nQDzWwd1zxVCtjdbOP8A3m/6ClYut2LvKATc7Mrf/wBclP60q1ozo8yOFGEwiP4luK/VdYSNFdHZAIcwmKnzQ66n9F1f2TMapt/+rPRV7az+k3m5b+2ajWacAWeF4fijvIcH5Gt7DyazSiEplhtR7nRw1Utw9nHS2SeO3/bFpdH3FRpitkn+YH9a1UjRDOrOCvDNT3pSE80xbu12iT5cQ3IHoKEyek4V4cdr9zmlvVpPwRCYln+9DI/xdXoafFdCtrQ4gLQtK0noUncGsq5mVlmquny+PMMOlGEg/HcrMvt2dvFSO4eu1Wbp7q7j+URwWJrD+33y3yWj/O2eYoftN8vadhmH/d7zP9hlxARCXbF/Idi3ZO5HPhVWZRScd9mQyl5hxLjauikncGlK6zXBwqDUJYgg0KKKKKtUiiiiooiiiiooiiio5n+TRMZsb0yQ+hopQVFSjyQkdVH/AE86wmZlktCMWJkPqg3nUtIUN0Vwa1I57mdtxa2vyJMlltTSOJa3D8LY8T4nwFc5NXbUXW28vQ8ODtpsCV8Em8yAUlQ7wn/RKefiRWWF4zetfMpXe70uTCwaC+ezb3KVzljrz/U9wOw5kmuoIMW3WG2MWq0Q2YsZhAQ0w0nZKB6UpA0e6M8R50Vdm1n6WeP7neNhqVxZkNaWQDRut2t3hsHUqA6a6KYJgLaJnugu13HxKnzgFrKu8oT0T+vnVil+Q8P7hvhT4mhDSEqDslXE4eietZTHHPd1bN8CenM867BJcb3SYFBawSKGHHtySV7HqVcqXbjoT95ni+dKNI2aSS6eHbltyFeDhV+zQV/xKPKhLiUQYAvHGmyAUICVJ6ctqyc2IAShI36kjpQRwqCRtxHw6CvTzcKSeYG43oUVEl2EfY7pKiepApFyOgHdCHPkNiKdbgK2WVIPcd+RrIh0dFJV6jarDiEJaCmQcdQPhcDqOhChVe5xo9hWWSDcoTTmOX5PxN3C2/3S+L+JI+FY9efnVjNuhMxYUOFJHxDqAaWcjMvJ4gACeik0RIyOtCATkufomR51pLc24edtIm2ZxYQ1fIqT2CvAPp/7tX8XT1q98fvMG929uZBeS4haQeSt9t/1HnWEtlh+M7bbrHalxH0FC0OoCkLSe4g9RVP3KxXHRq8fblgU9Lwh1f8AiohJWu2bn7yT1LPiOqevdXJdJmSPeSw+7rZq8WbD/bkdVDm42P3wwxc9uvwO0b8xrV6UU1tU+Nc7ezOiOJcYeQFJUDvTqn2Pa9oc01BWZBaaFFFFFEqRRRRUUWLq0ttqcWdkpG5NctanvXHVrVuJp1bXltwEESbs8g/s2U9EfQjl4r8q6E1JuibRh86YpQSEtncnyBP+lVf7IFhV/wBErnnc5BM/JJi3UrV1EdCiEJ+vH9BSGHv50YvdhAH/ANOrTkAT4kLVxwQcIzfbgM+ZoFb9qt9vxuwRLRao6I8SK0GmGkjkAO/17z5mvWEFTqPi+NRJKiKzWDKmFP7iaXlNlKUONDm33eVdUGltZSZGK+oJZtpCOYG5PUnqawkuNhPZkcalcgkdTSbkoKQkMjicV0HhSkdgN7qUeJw9VGgpS5Wla2amoaeZA7RBcbH7oPSnKZbBTvxbbDoeRpeoLqpqPheAxUv5ReGIqiOJEdHxvu+SUDmf0q2/fNKISCwWUzi/EkuqI4l8/QdwrSZrl2NYhFRccjvsC1sJO28h4JUrySnqo+QBqhZWZa2aqcSNPMZTg+OL63m7nheWj8SQQdv5Qf8ANXuIez1gM1q4ZDlOXStRLvCCjKUZn9yhwJ4uAhJJ7+hV39BWwhMBq88FL0onWWe1pigkLt2E45d8plE8KVJaLTSj3bDYrP8ASKjjmd+1RlTC3bLhsbGYG2/aymktqQnx4n1A7fy1Ut29orIILLltwDGsfwuEndCVQoiVyCnzcUOvoKt3R7J8hyX2RM9u+SXmXdJaZUlpL0lziUlPZMnhHgN1Hl506YIgtBwDPXf5IalxzUMvMLWBYU5kftB4talq5qaRkQbX/S0kflWGKaaavZbCkz8N1qYviYy+B0x79MTsvbcDcjv7j0rnC2w5U0pbgw5Epew+FhpSz9Eiu5/YKsN3suAXty7WuZb1SpyS0JLJbK0pSeYB57c6bmSZeFiBFfAIWAE0VQez1nupzOu9rwrIsmuc1kyHYs2LNf7cApQo8lK3IIIB3Brt5CUEOQJbaHWXElJStO6VJPUEHqD4Vw/pIwmX7cDqdzwi5Tl7jyYcruCUF8Oy/wBo3zCvxCk9IhuNoApUBQWuoVgsNzCMsew7iWbLNSqRZlKJPZbc1x9z+HmR/CKsWtRebcm6xIj6ABKiPIkML6EKSeY37gobg+RrbiuKyH3ZIGWfr68U0XYgEUUUVoqRRRRUUVT+1VIdj6Q3VTRIWplSU+pKR/rUy0wt7Vo0zx6CynhS1bGSQPxFAUfzJqNe0vb13DSK8JbSVKQ3xcvAEE/pUww1xMjBbM82d0uW1hST5FpJpWWFIsbe4HhhA9UcW4Z4H4n5J9aiCHD+8TTiS6GWirv6AeNM4fEljtUDcpUeIeIrMqEqWkDmhA3p9wq6qVa6jQNa8ZjOhIeQrZw89iOVJ3O9QbPb3p96kNQIjCSt195YS2gDvJNMsrymPZFNwYsR+7XmQP8AC22Lt2i/4lE8m2x3rVyHdudgaowlWMarZvMayrI4uUzrNs99jQQo2mEri2AJPKQ4D1Udx12AqgcV3Iw3Dkl7nqDnepCnIGklvTarJvwO5VdWilCh3mM0ea/JRG1U3nV3wnQ7MUtzsfm5/nUhCH3Lxe3wW2yo9Up57Hn6+dbjGtONeMv1CtGUZ7cW7TZrXcm5LNuU6EpKG1hQShhv4RyG26jvVvai6YaVXDI05zn7sUPtsIQBPmhqOgJHI8O43PqaZbgZY5HYhJcSqy9uZnL7tDxG2Y1HvMhMsOF+Jb0uKSs7DbiSjrt51KPYxwHJ8R0yv1vyq0uWmRcpqnWm3Skr7MsoTuQCduYPI86WzD2oNMMdCmLfeJd/fb+EIt8b+73Hd2i9ht5jeqeyv2x8qlcbeM45AtyD912YsvuD5DZNaNhxXw+7AsrxCtSppi/sfYyZ772RZTcpqe0UoMw2ksAAk7AqPET9BV2Y7j+mmlGHuY61JtlotLzinnm7jNSe2WpISoq7Q89wlI2HLl0rgXKdbtU8jUv37MrjHaWebUFXuyPT4NiR6k1X8qRIlvqelPuvurO6lurKlE+ZNNGTixfzH2QNfhX0NuevGhWKsmNBu8Fzs/h7K1Qirb0KUhP51Arz7YGJR1Fq1Y5e7ggHdKnVoZSfXmTXFgrKmoWjYIzqUDnkqc2nUq7WLVmXqJYYkVie688401ISXUNhxJSRyI3ICjUjvHtH6w3NR48r91QeiYsNlvb0PDxfnVRivRXT9nhOILmglBiOSnE3VvVCYT7xn+RkH91M5aU/QECvMZuGpWbZDFsVovd/uVwlK2Q3764dh3qUd+SR3k1rdOsKyDPcmYsGOQlSJLh3Ws8m2Ud61q7gP/yvoZoXpHj+lmP+6wEpl3WQke/XBaNlun8I/Cgdw+vOl5ybgSbaNaMWoeqJjHP8E20E0nZ05svbXK5SbxkMpA97lvPKWlH/AJbYUeSR49T+VWhRRXk4sV0Vxe83KbAAFAiiiis1aYZDbmrvZJtteHwSWVNn5jao1ow46jA49ol8pVndct7yT+7wK+D/AOMtn51NK1Me1CHkMi5RdktzUJElvxWn7qx57HY+ifCssBETGNYofLz5oq1bROIZ7KU4yrv5imjzdwd7RNvcQw4pRCnlgEIHknvV4b8vHfoYxqPqbh+HObTrg7KuKB/2C3sqkSD4bpT93+Yiufs5161dvnbRcCwxWPxHCdpc3gckEeISo8KfoquhDgxYoqxpPBIRI8GEaRHgU2kBdNKk4zhlvkTbvMjWwO/HJmzXwFPkd6lq5nyA6dwqgbn7ROimmkaRbtOMbTcn1qUVqgsiOytW++6nVDiVz8Aa50veCaoZdcvf8nupmPrPxOzZxcKfQc9vQVLcX0LxVHA5lGW3J0/vM22EEg+XG4eX0NNs0ZGzLCsDpiSbnFHNM8/9qTU/JlLat0mJjsQ7gIgt7ubebitzv6belU1drtdr7P8AeLrcZtzlqPJUh5Tq9/Lcn8q6yi4Tovj8cKteATsjlgcl3i5FKN/NKNkn+mvJGZZ7a2izhGAac4610HZMdov67JH5UyyTmG+7CKz+2JA/zQuZ7JgOc3tSU2nEL5L4uhRCXsfmQBU2tHs46w3FvtDiZhNgblU2U0zt9VVLsny32lLklSXcneab7kW1xqPsPAFCUn86rW+2fVe4uFy8HIJ6z1U7MLu//Ma1ECa1tpwJWrdISbsog5hTJHs5XuMgrvueYJZuH7yH7rxLHySD+tYDSbS+ED9sa92BK0/ebgwFyD/9x+lVg7h2U8ZLmP3FSu8lkk163h2VKOyceuPzZIrVsCMc3Hl/1H7XL/uHMKy04z7OkM7S9S8ruKh1EKz9kD6FYIrBS/ZqiHZLGpFz27yqM2D+hqCR9PsyeI4bDISPFakp/U1t4WkuWvkF5EOMk/je3I+QFMMlHnMu+uCXfpOUZnEbzUiVkPs8sJ2Z04y2YR3yL32e/wDTvW2wmXpdl2TxMdxjQufOnSV7JDuTPcKB3rWeA7JA5k1qrZoukEKul83HemO1/qr/AGqxsAiRsKS9bMQ96VOnkIcUz8Uh7wTxAbhPkOXjW5kXYTQmu9x8iufE7QyrTRlXHcPVdHYvaNOtI7KuJbIkK1OPkLeaZWp551fhufiUO4b7VP4L65ERp9yOuOpxIUW17cSN+47d9VdpVptJhyW8iyvhcuA+OPF4uJLB/Eo/vL/SrXryc6ITX4WOLjrPou1IxJiK3HGbhrkNfFFFFFJp5eLUlCSpaglI6knYCohkWo+L2bibM33x9PVuMOLY+aug+tK3jC0Xxwm93y6SWj/4dpwMtD5JG/1JpKHpnhEbb/qFh8jvkKU4f+Y07BEq28Uk7hbqfRc6O6efaCGtG03PIW6qur9rfKWpTdsjw4g7i4rtV/Qcqhd0z/JbqSHLhdn0n9xhtSE/RO1dFv2/ELBGS6/Bs9vZ34UqW02jc+A3HM05jXqwCCuVHuEERmlcDi0OJCUHwPh866MPSUtCH4UDif8Ai5MXQ8zHP48yfAWHKoXKAVeXSVMY/cnCT17FXP8AKvFsZTtuMbnpHiYzn+1dWN5XjLikhGQWtRWoJTtKRzJOwHXrvypabkNjhSTFmXeDHfB27N19KVfQmmP4gi1p3XxS47Ly1KmJ9c1yDIXkbX7S1SWv80VX+1MnLrc2/wBojg/zNEfrXZ671aEQfflXOH7rxcPbdsko38OLfakDJx6429VwLltmQ078T/wOIHjueYoh2hd+qF1+Sp3ZaF+mJ0+a41Te5vi0r+WlUX2QPvstq9CRXT9ytmlVyaVIls4243xFJdSptICvDcEbGo9edM9J1xm5RmotzT44mnm7hshQ8RxEim2aegmzmEdUnE7NPHuuaeiolu/NH9owseh3pZN6hHqXE+qatQ6JYrcEuLsuaLUlsbq3Db3CPE8JTWrg6KWy4SlRrfn9vlOpHEptuOFLA8SA5TI0vKEXdTgfRJO7PTNaBvUeqgQvEH/jKH8prxV5gjotZ9EmrHt+imPP3D3BWesvSxvvHZYQHOXXkVk/lW2/sk02tUwRrtkshyQBuplcptBA8SEjcChdpmVFgSeBVs7NzJuQBxHkqccvsZI+BpxXrsKzt717vDwYs1pfkuK6BppTh/LlXSdl0704t8QT4tpgyGUjiEh1wvDbx3JIqTWO4Y++lcayS7c4lobrbiLQeAeJCelIxu0DQD3cMnxXSgdlRUd68cLqhcZ0Xyy8lL2RzkWqMeZaSQt0j0Hwj5k+lXRhGC45iDHDaoSfeCNlynfidV8+4eQrZIyOwOLdbReYClsjicSH0koG+25G/KkhlmMHmMhtewOxPvSNh+dcWan5qas/LYMl6GT0dJyd2AV2nP68FuqKY3O8Wq2FsXC4Roynf2aXHACv0HU/KlrfNh3CMmVBlMyWFEhLjSwpJI5EbjwNc6hpVdTEK0qnFFFFUrRRRRUUUG1CsJvWRWaXbLnEavdpKpUeHKHE28k8iSBzHTbiHStJFvUC62vOID1iRa7/AA46ftRCFcbbvEhXZrCu/kk92/TerAvFgtN2ksSpsUqkxwQy+24ptxAPUBSSDt5UzawzGmrXJtqLYEx5TnaSdnl8byvFa+LiV8zTbI7Q0B2qnxrxSb5d5c4t11+FOHBU7pnBucnRPE+3t1gdx1ElTtwdlrKXUMoedVxknYJKVpSdwenzqRagOBzWfB5duis3ArjyFsp7QJS6OxVseI7jpzBqZnTbCzbPss2X/AEbGL7092O2+5HBx8PXyp5IwrGZF1jXR227zIqUpjupfcSWkgbAJ2VskbcthRe0Mxl22vXig9mf3YbsI6cFBNILfEvU3MZN04GJNxkdjMsoTsmIkAjc7/eKgfvACtFZrtdMetVy0ljg/bTkr3S0u9nyEZzcqd28G0cSvParmdx+zuXpu9GChNxQngEhClIWpPgrYjiHkd6zVZLSq/ovyoLJuaGSwmSR8QQTuR4fPrUdNNcXVFjQjcR5KNlHNDaG4qDvB81Vuvdit2P6BSLTboyG2IvYNo+EbnZYG5PeT4059pFltOmcZKGmxtKZCRwgAcxVhZNjNkyWMiNfIImsIO4bU4sJJ8wCAfnTa74Zjd3gx4Nzt6pcaP8Asm3ZLpA8z8XM+Z3qoUw1uCtbEnnRXFlnOx4aXAHJV9du2s2t2PXLIfd21zWVQYLVsBCSpRPN7i2JHgQNhTzRRtpjMs+jrbQ3J+2VOBPCArs1AbH0JBqd2zFcftty+0o1uQZ3DwCS8tTzqU+AUskgeleXjE7Bdp3v8y3j3vh4C+y6tlxSfAqQQSPWo6YY5padgHI7Pmo2WexwcKZk8xt+ShSu1/tHzyVZmm1zWLNDQ2pKRul3d9RG/wCLYpP0pX2do8B3TliWpCHrq++8bm64N3lP8Z5LJ578PByqdWCx2mww1RLRBaiNLWXF8O5UtZ6qUo7lR5DmSelMLththuK5Lvu70KRJGzr8J9cdaj4ngIBPmQaHvmOaWG2V/AUR9y9rw8XsbeJqoNha1xtecitFnO9k9xD0xpHNpmUVJ4QB0SSnjOw67HwpT2cG2mLLkkZaENym7/JUtG2y0oVw8O/kdjtUpwbFJeJpXBiT4si2KWVntIvDJKj3qcB+M+ZG9Prph2OXGe5PkW7hlOjZ11h5bKnB/EUKHF86OLHY7E05GlxutuzWcKA9uFwFxWx3mtqVyUVxJqM7mGokhlppbZWy2VhIIKktL4hv4jcb1CdL7feLhpP7pHtlllWp67ONzvelEOe7l4B4joBsji2O+/Krni41Y4liVY4lvRGt6t+JplakcRPUlQIUSe8k7nvrVtadYezBXAZtK24i9+NhEx5Lat+u6QvY799Rsw0NIOsjoKbVbpZ5cCNQPUg7Forpa/tHL2sww252u5zGISWnIUhfE2tlQ4kKQsb8BI577EGtxpTerRebJMXarWq1rZmuiZF6hD6lcSyCOR3J35eNbF3DscWttaLeY622Ex0qjPOMnsk8gglChuB51sbHaLZY7ci32mE1DioJIbbGw3PMk95JPUnmayiRWuZh12+t61hwXNiF2q/1u3p9RRRS6ZX/2Q==" alt="SERVIBUQUES"></div>
+  <div class="HR">
+    <div class="SD" id="SD"></div>
+    <div class="HU"><span id="HR"></span><br><b id="HN">—</b></div>
+    <button class="BLO" id="BLO">SALIR</button>
   </div>
 </header>
-
-<nav>
-  <button class="tab active" onclick="showTab('dashboard')">📊 INICIO</button>
-  <button class="tab" onclick="showTab('muellaje')">⚓ MUELLAJE <span class="badge" id="cnt-m">0</span></button>
-  <button class="tab" onclick="showTab('energia')">⚡ ENERGÍA <span class="badge" id="cnt-e">0</span></button>
-  <button class="tab" onclick="showTab('agua')">💧 AGUA <span class="badge" id="cnt-a">0</span></button>
-  <button class="tab" onclick="showTab('bodegaje')">📦 BODEGA <span class="badge" id="cnt-b">0</span></button>
-  <button class="tab" onclick="showTab('vehiculos')">🚗 VEHÍCULOS <span class="badge" id="cnt-v">0</span></button>
-  <button class="tab" onclick="showTab('playa')">⚙️ ASTILLERO <span class="badge" id="cnt-p">0</span></button>
-  <button class="tab admin-only" onclick="showTab('arriendos')">🏢 ARRIENDOS <span class="badge" id="cnt-ar">0</span></button>
-  <button class="tab admin-only" onclick="showTab('factura')">🧾 FACTURAR</button>
-  <button class="tab admin-only" onclick="showTab('admin')">⚙️ ADMIN</button>
+<nav id="NAV">
+  <button class="TB act" data-tab="dashboard">📊 INICIO</button>
+  <button class="TB" data-tab="muellaje">⚓ MUELLAJE <span class="BG" id="CM">0</span></button>
+  <button class="TB" data-tab="energia">⚡ ENERGÍA <span class="BG" id="CE">0</span></button>
+  <button class="TB" data-tab="agua">💧 AGUA <span class="BG" id="CA">0</span></button>
+  <button class="TB" data-tab="bodegaje">📦 BODEGA <span class="BG" id="CB">0</span></button>
+  <button class="TB" data-tab="vehiculos">🚗 VEHÍCULOS <span class="BG" id="CV">0</span></button>
+  <button class="TB" data-tab="playa">⚙️ ASTILLERO <span class="BG" id="CP">0</span></button>
+  <button class="TB AON" data-tab="arriendos">🏢 ARRIENDOS <span class="BG" id="CAR">0</span></button>
+  <button class="TB AON" data-tab="factura">🧾 FACTURAR</button>
+  <button class="TB AON" data-tab="admin">⚙️ ADMIN</button>
 </nav>
-
 <main>
-<div class="section active" id="sec-dashboard">
-  <div class="dash-grid">
-    <div class="stat-card"><div class="stat-label">⚓ ATRACADAS</div><div class="stat-value" id="s-atrac">0</div><div class="stat-sub">EN MUELLE AHORA</div></div>
-    <div class="stat-card"><div class="stat-label">⚡ ENERGÍA ACTIVA</div><div class="stat-value" id="s-energ">0</div><div class="stat-sub">CONEXIONES VIVAS</div></div>
-    <div class="stat-card"><div class="stat-label">📦 BODEGA</div><div class="stat-value" id="s-bodeg">0</div><div class="stat-sub">ITEMS ACTIVOS</div></div>
-    <div class="stat-card"><div class="stat-label">🚗 VEHÍCULOS HOY</div><div class="stat-value" id="s-vehi">0</div><div class="stat-sub">INGRESOS DEL DÍA</div></div>
-    <div class="stat-card admin-only" style="border-color:var(--green)"><div class="stat-label">💰 TOTAL FACTURABLE</div><div class="stat-value" id="s-total" style="font-size:20px;color:var(--green)">$0</div><div class="stat-sub">PENDIENTE COBRO</div></div>
+<!-- DASHBOARD -->
+<div class="SEC act" id="S-dashboard">
+  <div class="DG">
+    <div class="SC"><div class="SL">⚓ ATRACADAS</div><div class="SV" id="DA">0</div><div class="SS">EN MUELLE</div></div>
+    <div class="SC"><div class="SL">⚡ ENERGÍA ACTIVA</div><div class="SV" id="DE">0</div><div class="SS">CONEXIONES</div></div>
+    <div class="SC"><div class="SL">📦 BODEGA</div><div class="SV" id="DB">0</div><div class="SS">ITEMS</div></div>
+    <div class="SC"><div class="SL">🚗 VEHÍCULOS HOY</div><div class="SV" id="DV">0</div><div class="SS">INGRESOS</div></div>
   </div>
-  <div class="section-header"><div class="section-title">ACTIVIDAD RECIENTE</div></div>
-  <div class="card"><div class="table-scroll"><table>
-    <thead><tr><th>MÓDULO</th><th>CLIENTE</th><th>EVENTO</th><th>FECHA · HORA</th><th>USUARIO</th></tr></thead>
-    <tbody id="dash-tbody"></tbody>
+  <div class="SC AON" id="DSC" style="margin-bottom:12px;border-color:var(--green)">
+    <div class="SL">💰 TOTAL FACTURABLE</div><div class="SV" id="DT" style="font-size:20px;color:var(--green)">$0</div><div class="SS">PENDIENTE COBRO</div>
+  </div>
+  <div class="SH"><div class="ST">ACTIVIDAD RECIENTE</div></div>
+  <div class="CD"><div class="TS"><table>
+    <thead><tr><th>MÓDULO</th><th>CLIENTE</th><th>EVENTO</th><th>FECHA</th><th>USUARIO</th></tr></thead>
+    <tbody id="DAT"></tbody>
   </table></div></div>
 </div>
-
-<div class="section" id="sec-muellaje">
-  <div class="section-header"><div class="section-title">MUELLAJE</div><button class="btn btn-primary" onclick="openMuellaje()">+ NUEVO</button></div>
-  <div class="card">
-    <div class="bulk-bar" id="bulk-muellaje">
-      <span id="bulk-cnt-muellaje">0 SELECCIONADOS</span>
-      <button class="btn btn-sm btn-del" onclick="bulkDel('muellaje')">🗑️ ELIMINAR SELECCIONADOS</button>
-      <button class="btn btn-sm btn-secondary" onclick="clearSel('muellaje')">CANCELAR</button>
-    </div>
-    <div class="filter-row">
-      <select id="fil-m-cli" onchange="renderMuellaje()"><option value="">TODOS LOS CLIENTES</option></select>
-      
-    </div>
-    <div class="table-scroll"><table>
-      <thead><tr><th><input type="checkbox" onclick="selAll('muellaje',this)"></th><th>CLIENTE</th><th>FECHA DESDE</th><th>FECHA HASTA</th><th>DÍAS</th><th>TARIFA/DÍA</th><th>SUBTOTAL</th><th>NOTAS</th><th></th></tr></thead>
-      <tbody id="m-tbody"></tbody>
+<!-- MUELLAJE -->
+<div class="SEC" id="S-muellaje">
+  <div class="SH"><div class="ST">MUELLAJE</div><button class="BN BP" id="NM">+ NUEVO</button></div>
+  <div class="CD">
+    <div class="BB2" id="BKM"><span id="BCM">0 SEL.</span><button class="BN BNS BD" id="BMD">🗑️ ELIMINAR</button><button class="BN BNS BS2" id="BMC">CANCELAR</button></div>
+    <div class="FR"><select id="FMC"><option value="">TODOS LOS CLIENTES</option></select></div>
+    <div class="TS"><table>
+      <thead><tr><th><input type="checkbox" id="SAM"></th><th>CLIENTE</th><th>FECHA DESDE</th><th>FECHA HASTA</th><th>DÍAS</th><th>TARIFA</th><th>SUBTOTAL</th><th>NOTAS</th><th></th></tr></thead>
+      <tbody id="MT"></tbody>
     </table></div>
   </div>
 </div>
-
-<div class="section" id="sec-energia">
-  <div class="section-header"><div class="section-title">ENERGÍA</div><button class="btn btn-primary" onclick="openEnergia()">+ NUEVO</button></div>
-  <div id="e-warns"></div>
-  <div class="card">
-    <div class="bulk-bar" id="bulk-energia">
-      <span id="bulk-cnt-energia">0 SELECCIONADOS</span>
-      <button class="btn btn-sm btn-del" onclick="bulkDel('energia')">🗑️ ELIMINAR SELECCIONADOS</button>
-      <button class="btn btn-sm btn-secondary" onclick="clearSel('energia')">CANCELAR</button>
-    </div>
-    <div class="filter-row">
-      <select id="fil-e-cli" onchange="renderEnergia()"><option value="">TODOS LOS CLIENTES</option></select>
-      
-    </div>
-    <div class="table-scroll"><table>
-      <thead><tr><th><input type="checkbox" onclick="selAll('energia',this)"></th><th>CLIENTE</th><th>VOLTAJE / LÍNEA</th><th>FECHA DESDE</th><th>FECHA HASTA</th><th>TARIFA/H</th><th>HORAS</th><th>SUBTOTAL</th><th>NOTAS</th><th></th></tr></thead>
-      <tbody id="e-tbody"></tbody>
+<!-- ENERGIA -->
+<div class="SEC" id="S-energia">
+  <div class="SH"><div class="ST">ENERGÍA</div><button class="BN BP" id="NE">+ NUEVO</button></div>
+  <div id="EW"></div>
+  <div class="CD">
+    <div class="BB2" id="BKE"><span id="BCE">0 SEL.</span><button class="BN BNS BD" id="BED">🗑️ ELIMINAR</button><button class="BN BNS BS2" id="BEC">CANCELAR</button></div>
+    <div class="FR"><select id="FEC"><option value="">TODOS LOS CLIENTES</option></select></div>
+    <div class="TS"><table>
+      <thead><tr><th><input type="checkbox" id="SAE"></th><th>CLIENTE</th><th>VOLTAJE/LÍNEA</th><th>FECHA DESDE</th><th>FECHA HASTA</th><th>TARIFA/H</th><th>HORAS</th><th>SUBTOTAL</th><th>NOTAS</th><th></th></tr></thead>
+      <tbody id="ET"></tbody>
     </table></div>
   </div>
 </div>
-
-<div class="section" id="sec-agua">
-  <div class="section-header"><div class="section-title">AGUA</div><button class="btn btn-primary" onclick="openAgua()">+ NUEVO</button></div>
-  <div class="card">
-    <div class="bulk-bar" id="bulk-agua">
-      <span id="bulk-cnt-agua">0 SELECCIONADOS</span>
-      <button class="btn btn-sm btn-del" onclick="bulkDel('agua')">🗑️ ELIMINAR SELECCIONADOS</button>
-      <button class="btn btn-sm btn-secondary" onclick="clearSel('agua')">CANCELAR</button>
-    </div>
-    <div class="filter-row">
-      <select id="fil-a-cli" onchange="renderAgua()"><option value="">TODOS LOS CLIENTES</option></select>
-      
-    </div>
-    <div class="table-scroll"><table>
-      <thead><tr><th><input type="checkbox" onclick="selAll('agua',this)"></th><th>CLIENTE</th><th>FECHA DESDE</th><th>FECHA HASTA</th><th>TARIFA</th><th>SUBTOTAL</th><th>NOTAS</th><th></th></tr></thead>
-      <tbody id="a-tbody"></tbody>
+<!-- AGUA -->
+<div class="SEC" id="S-agua">
+  <div class="SH"><div class="ST">AGUA</div><button class="BN BP" id="NA">+ NUEVO</button></div>
+  <div class="CD">
+    <div class="BB2" id="BKA"><span id="BCA">0 SEL.</span><button class="BN BNS BD" id="BAD">🗑️ ELIMINAR</button><button class="BN BNS BS2" id="BAC">CANCELAR</button></div>
+    <div class="FR"><select id="FAC"><option value="">TODOS LOS CLIENTES</option></select></div>
+    <div class="TS"><table>
+      <thead><tr><th><input type="checkbox" id="SAA"></th><th>CLIENTE</th><th>FECHA DESDE</th><th>FECHA HASTA</th><th>TARIFA</th><th>SUBTOTAL</th><th>NOTAS</th><th></th></tr></thead>
+      <tbody id="AT"></tbody>
     </table></div>
   </div>
 </div>
-
-<div class="section" id="sec-bodegaje">
-  <div class="section-header"><div class="section-title">BODEGAJE</div><button class="btn btn-primary" onclick="openBodegaje()">+ NUEVO</button></div>
-  <div class="card">
-    <div class="bulk-bar" id="bulk-bodegaje">
-      <span id="bulk-cnt-bodegaje">0 SELECCIONADOS</span>
-      <button class="btn btn-sm btn-del" onclick="bulkDel('bodegaje')">🗑️ ELIMINAR SELECCIONADOS</button>
-      <button class="btn btn-sm btn-secondary" onclick="clearSel('bodegaje')">CANCELAR</button>
-    </div>
-    <div class="filter-row">
-      <select id="fil-b-cli" onchange="renderBodegaje()"><option value="">TODOS LOS CLIENTES</option></select>
-      
-    </div>
-    <div class="table-scroll"><table>
-      <thead><tr><th><input type="checkbox" onclick="selAll('bodegaje',this)"></th><th>CLIENTE</th><th>MERCANCÍA</th><th>FOTO</th><th>FECHA DESDE</th><th>FECHA HASTA</th><th>DÍAS</th><th>TARIFA/DÍA</th><th>SUBTOTAL</th><th></th></tr></thead>
-      <tbody id="b-tbody"></tbody>
+<!-- BODEGAJE -->
+<div class="SEC" id="S-bodegaje">
+  <div class="SH"><div class="ST">BODEGAJE</div><button class="BN BP" id="NB">+ NUEVO</button></div>
+  <div class="CD">
+    <div class="BB2" id="BKB"><span id="BCB">0 SEL.</span><button class="BN BNS BD" id="BBD">🗑️ ELIMINAR</button><button class="BN BNS BS2" id="BBC">CANCELAR</button></div>
+    <div class="FR"><select id="FBC"><option value="">TODOS LOS CLIENTES</option></select></div>
+    <div class="TS"><table>
+      <thead><tr><th><input type="checkbox" id="SAB"></th><th>CLIENTE</th><th>MERCANCÍA</th><th>FOTO</th><th>FECHA DESDE</th><th>FECHA HASTA</th><th>DÍAS</th><th>TARIFA</th><th>SUBTOTAL</th><th></th></tr></thead>
+      <tbody id="BT"></tbody>
     </table></div>
   </div>
 </div>
-
-<div class="section" id="sec-vehiculos">
-  <div class="section-header"><div class="section-title">VEHÍCULOS</div><button class="btn btn-primary" onclick="openVehiculo()">+ NUEVO</button></div>
-  <div class="card">
-    <div class="bulk-bar" id="bulk-vehiculos">
-      <span id="bulk-cnt-vehiculos">0 SELECCIONADOS</span>
-      <button class="btn btn-sm btn-del" onclick="bulkDel('vehiculos')">🗑️ ELIMINAR SELECCIONADOS</button>
-      <button class="btn btn-sm btn-secondary" onclick="clearSel('vehiculos')">CANCELAR</button>
-    </div>
-    <div class="filter-row">
-      <select id="fil-v-cli" onchange="renderVehiculos()"><option value="">TODOS LOS CLIENTES</option></select>
-    </div>
-    <div class="table-scroll"><table>
-      <thead><tr><th><input type="checkbox" onclick="selAll('vehiculos',this)"></th><th>CLIENTE</th><th>TIPO</th><th>PLACA</th><th>MERCANCÍA</th><th>AUTORIZA</th><th>FECHA · HORA</th><th>VALOR</th><th></th></tr></thead>
-      <tbody id="v-tbody"></tbody>
+<!-- VEHICULOS -->
+<div class="SEC" id="S-vehiculos">
+  <div class="SH"><div class="ST">VEHÍCULOS</div><button class="BN BP" id="NV">+ NUEVO</button></div>
+  <div class="CD">
+    <div class="BB2" id="BKV"><span id="BCV">0 SEL.</span><button class="BN BNS BD" id="BVD">🗑️ ELIMINAR</button><button class="BN BNS BS2" id="BVC">CANCELAR</button></div>
+    <div class="FR"><select id="FVC"><option value="">TODOS LOS CLIENTES</option></select></div>
+    <div class="TS"><table>
+      <thead><tr><th><input type="checkbox" id="SAV"></th><th>CLIENTE</th><th>TIPO</th><th>PLACA</th><th>MERCANCÍA</th><th>AUTORIZA</th><th>FECHA</th><th>VALOR</th><th></th></tr></thead>
+      <tbody id="VT"></tbody>
     </table></div>
   </div>
 </div>
-
-<div class="section" id="sec-playa">
-  <div class="section-header"><div class="section-title">SERVICIO DE PLAYA</div><button class="btn btn-primary" onclick="openPlaya()">+ NUEVO</button></div>
-  <div class="card">
-    <div class="bulk-bar" id="bulk-playa">
-      <span id="bulk-cnt-playa">0 SELECCIONADOS</span>
-      <button class="btn btn-sm btn-del" onclick="bulkDel('playa')">🗑️ ELIMINAR SELECCIONADOS</button>
-      <button class="btn btn-sm btn-secondary" onclick="clearSel('playa')">CANCELAR</button>
-    </div>
-    <div class="filter-row">
-      <select id="fil-p-cli" onchange="renderPlaya()"><option value="">TODOS LOS CLIENTES</option></select>
-      
-    </div>
-    <div class="table-scroll"><table>
-      <thead><tr><th><input type="checkbox" onclick="selAll('playa',this)"></th><th>CLIENTE</th><th>FECHA DESDE</th><th>FECHA HASTA</th><th>DÍAS</th><th>TARIFA/DÍA</th><th>SUBTOTAL</th><th>NOTAS</th><th></th></tr></thead>
-      <tbody id="p-tbody"></tbody>
+<!-- PLAYA/ASTILLERO -->
+<div class="SEC" id="S-playa">
+  <div class="SH"><div class="ST">ASTILLERO</div><button class="BN BP" id="NP">+ NUEVO</button></div>
+  <div class="CD">
+    <div class="BB2" id="BKP"><span id="BCP2">0 SEL.</span><button class="BN BNS BD" id="BPD">🗑️ ELIMINAR</button><button class="BN BNS BS2" id="BPC">CANCELAR</button></div>
+    <div class="FR"><select id="FPC"><option value="">TODOS LOS CLIENTES</option></select></div>
+    <div class="TS"><table>
+      <thead><tr><th><input type="checkbox" id="SAP"></th><th>CLIENTE</th><th>FECHA DESDE</th><th>FECHA HASTA</th><th>DÍAS</th><th>TARIFA</th><th>SUBTOTAL</th><th>NOTAS</th><th></th></tr></thead>
+      <tbody id="PT2"></tbody>
     </table></div>
   </div>
 </div>
-
-<div class="section" id="sec-arriendos">
-  <div class="section-header"><div class="section-title">ARRIENDOS</div><button class="btn btn-primary" onclick="openArriendo()">+ NUEVO</button></div>
-  <div class="card">
-    <div class="bulk-bar" id="bulk-arriendos">
-      <span id="bulk-cnt-arriendos">0 SELECCIONADOS</span>
-      <button class="btn btn-sm btn-del" onclick="bulkDel('arriendos')">🗑️ ELIMINAR SELECCIONADOS</button>
-      <button class="btn btn-sm btn-secondary" onclick="clearSel('arriendos')">CANCELAR</button>
-    </div>
-    <div class="filter-row">
-      <select id="fil-ar-cli" onchange="renderArriendos()"><option value="">TODOS LOS CLIENTES</option></select>
-    </div>
-    <div class="table-scroll"><table>
-      <thead><tr><th><input type="checkbox" onclick="selAll('arriendos',this)"></th><th>CLIENTE</th><th>TIPO</th><th>DESDE</th><th>HASTA</th><th>MESES</th><th>VALOR/MES</th><th>ENERGÍA</th><th>SUBTOTAL</th><th>NOTAS</th><th></th></tr></thead>
-      <tbody id="ar-tbody"></tbody>
+<!-- ARRIENDOS -->
+<div class="SEC" id="S-arriendos">
+  <div class="SH"><div class="ST">ARRIENDOS</div><button class="BN BP" id="NAR">+ NUEVO</button></div>
+  <div class="CD">
+    <div class="BB2" id="BKAR"><span id="BCAR">0 SEL.</span><button class="BN BNS BD" id="BARD">🗑️ ELIMINAR</button><button class="BN BNS BS2" id="BARC">CANCELAR</button></div>
+    <div class="FR"><select id="FARC"><option value="">TODOS LOS CLIENTES</option></select></div>
+    <div class="TS"><table>
+      <thead><tr><th><input type="checkbox" id="SAAR"></th><th>CLIENTE</th><th>TIPO</th><th>DESDE</th><th>HASTA</th><th>MESES</th><th>VLR/MES</th><th>ENERGÍA</th><th>SUBTOTAL</th><th>NOTAS</th><th></th></tr></thead>
+      <tbody id="ART"></tbody>
     </table></div>
   </div>
 </div>
-
-<div class="section" id="sec-factura">
-  <div class="section-header"><div class="section-title">FACTURACIÓN</div></div>
-  <div class="card" style="padding:14px">
-    <div class="form-grid g3" style="max-width:580px;margin-bottom:10px">
-      <div class="field"><label>CLIENTE / EMBARCACIÓN</label><select id="f-cli"><option value="">— TODOS —</option></select></div>
-      <div class="field"><label>PERÍODO</label><select id="f-per">
+<!-- FACTURA -->
+<div class="SEC" id="S-factura">
+  <div class="SH"><div class="ST">FACTURACIÓN</div></div>
+  <div class="CD" style="padding:14px">
+    <div class="FG G2" style="max-width:480px;margin-bottom:10px">
+      <div><label class="FL">CLIENTE</label><select class="FI" id="FCL"><option value="">— TODOS —</option></select></div>
+      <div><label class="FL">PERÍODO</label><select class="FI" id="FPR">
         <option value="todo">TODO EL HISTORIAL</option><option value="hoy">HOY</option>
         <option value="semana">ÚLTIMA SEMANA</option><option value="mes">ÚLTIMO MES</option>
       </select></div>
-      <div class="field" style="display:flex;align-items:flex-end"><button class="btn btn-primary" style="width:100%" onclick="calcFactura()">📊 CALCULAR</button></div>
     </div>
-    <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:7px;letter-spacing:1px">SERVICIOS A INCLUIR:</div>
-    <div style="display:flex;gap:12px;flex-wrap:wrap">
-      <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;cursor:pointer"><input type="checkbox" id="fc-m" checked> ⚓ MUELLAJE</label>
-      <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;cursor:pointer"><input type="checkbox" id="fc-e" checked> ⚡ ENERGÍA</label>
-      <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;cursor:pointer"><input type="checkbox" id="fc-a" checked> 💧 AGUA</label>
-      <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;cursor:pointer"><input type="checkbox" id="fc-b" checked> 📦 BODEGAJE</label>
-      <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;cursor:pointer"><input type="checkbox" id="fc-v" checked> 🚗 VEHÍCULOS</label>
-      <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;cursor:pointer"><input type="checkbox" id="fc-p" checked> ⚙️ ASTILLERO</label>
-      <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;cursor:pointer"><input type="checkbox" id="fc-ar" checked> 🏢 ARRIENDOS</label>
+    <div style="font-size:9px;font-weight:700;color:var(--muted);margin-bottom:6px">SERVICIOS A INCLUIR:</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+      <label style="display:flex;align-items:center;gap:3px;font-size:11px;font-weight:600;cursor:pointer"><input type="checkbox" id="FCM" checked> ⚓ MUELLAJE</label>
+      <label style="display:flex;align-items:center;gap:3px;font-size:11px;font-weight:600;cursor:pointer"><input type="checkbox" id="FCE" checked> ⚡ ENERGÍA</label>
+      <label style="display:flex;align-items:center;gap:3px;font-size:11px;font-weight:600;cursor:pointer"><input type="checkbox" id="FCA" checked> 💧 AGUA</label>
+      <label style="display:flex;align-items:center;gap:3px;font-size:11px;font-weight:600;cursor:pointer"><input type="checkbox" id="FCB" checked> 📦 BODEGAJE</label>
+      <label style="display:flex;align-items:center;gap:3px;font-size:11px;font-weight:600;cursor:pointer"><input type="checkbox" id="FCV" checked> 🚗 VEHÍCULOS</label>
+      <label style="display:flex;align-items:center;gap:3px;font-size:11px;font-weight:600;cursor:pointer"><input type="checkbox" id="FCP" checked> ⚙️ ASTILLERO</label>
+      <label style="display:flex;align-items:center;gap:3px;font-size:11px;font-weight:600;cursor:pointer"><input type="checkbox" id="FCAR" checked> 🏢 ARRIENDOS</label>
     </div>
+    <button class="BN BP" id="BFC">📊 CALCULAR</button>
   </div>
-  <div id="factura-out"><div class="empty-state"><p>SELECCIONA UN CLIENTE Y CALCULA</p></div></div>
+  <div id="FO"><div class="ES"><p>SELECCIONA UN CLIENTE Y CALCULA</p></div></div>
 </div>
-
-<div class="section" id="sec-admin">
-  <div class="section-header"><div class="section-title">ADMINISTRACIÓN</div></div>
-
-  <!-- EXPORTAR -->
-  <div class="card" style="padding:16px;margin-bottom:12px;background:#F0FDF4;border-color:var(--green)">
-    <div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:var(--green);margin-bottom:8px">💾 COPIA DE SEGURIDAD</div>
-    <div style="font-size:11px;color:var(--muted);margin-bottom:12px;font-weight:600">DESCARGA TODOS LOS REGISTROS EN UN ARCHIVO EXCEL. RECOMENDADO HACERLO REGULARMENTE.</div>
-    <button class="btn btn-primary" style="background:var(--green)" onclick="exportarExcel()">📥 EXPORTAR TODO A EXCEL</button>
+<!-- ADMIN -->
+<div class="SEC" id="S-admin">
+  <div class="SH"><div class="ST">ADMINISTRACIÓN</div></div>
+  <!-- BACKUP -->
+  <div class="CD" style="padding:14px;margin-bottom:10px;background:#F0FDF4;border-color:var(--green)">
+    <div style="font-size:13px;font-weight:700;color:var(--green);margin-bottom:6px">💾 COPIA DE SEGURIDAD</div>
+    <div style="font-size:10px;color:var(--muted);margin-bottom:8px;font-weight:600">DESCARGA TODOS LOS REGISTROS EN EXCEL. RECOMENDADO HACERLO REGULARMENTE.</div>
+    <button class="BN BP" style="background:var(--green)" id="BXL">📥 EXPORTAR A EXCEL</button>
   </div>
-  <div class="card" style="padding:16px;margin-bottom:12px">
-    <div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:var(--navy);margin-bottom:10px">⚓ EMBARCACIONES / CLIENTES</div>
+  <!-- CLIENTES -->
+  <div class="CD" style="padding:14px;margin-bottom:10px">
+    <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px">⚓ CLIENTES / EMBARCACIONES</div>
     <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
-      <div class="field" style="flex:1;min-width:160px"><label>NOMBRE</label><input type="text" id="adm-emb" placeholder="EJ: CRISMAR..."></div>
-      <div class="field" style="display:flex;align-items:flex-end"><button class="btn btn-primary" onclick="addEmb()">+ AGREGAR</button></div>
+      <div style="flex:1;min-width:150px"><label class="FL">NOMBRE</label><input class="FI" type="text" id="AEN" placeholder="EJ: CRISMAR..."></div>
+      <div style="display:flex;align-items:flex-end"><button class="BN BP" id="BAE">+ AGREGAR</button></div>
     </div>
-    <div class="card"><div class="table-scroll"><table>
+    <div class="CD"><div class="TS"><table>
       <thead><tr><th>#</th><th>NOMBRE (A→Z)</th><th></th></tr></thead>
-      <tbody id="adm-emb-tbody"></tbody>
+      <tbody id="AET"></tbody>
     </table></div></div>
   </div>
-  <div class="card" style="padding:16px;margin-bottom:12px">
-    <div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:var(--navy);margin-bottom:10px">👤 USUARIOS</div>
-    <div class="form-grid g3" style="max-width:520px">
-      <div class="field"><label>NOMBRE</label><input type="text" id="adm-uname"></div>
-      <div class="field"><label>CONTRASEÑA (ADMIN ONLY)</label><input type="password" id="adm-upass" placeholder="VACÍO = SIN CLAVE"></div>
-      <div class="field"><label>ROL</label><select id="adm-urol"><option value="usuario">VIGILANTE</option><option value="admin">ADMINISTRADOR</option></select></div>
+  <!-- USUARIOS -->
+  <div class="CD" style="padding:14px;margin-bottom:10px">
+    <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px">👤 USUARIOS</div>
+    <div class="FG G2" style="max-width:480px">
+      <div><label class="FL">NOMBRE</label><input class="FI" type="text" id="AUN"></div>
+      <div><label class="FL">CONTRASEÑA (SOLO ADMIN)</label><input class="FI" type="password" id="AUP" placeholder="VACÍO = SIN CLAVE"></div>
     </div>
-    <button class="btn btn-primary" onclick="addUser()">+ CREAR</button>
-    <div class="card" style="margin-top:10px"><div class="table-scroll"><table>
+    <div style="margin-bottom:10px"><label class="FL">ROL</label>
+      <select class="FI" id="AUR" style="max-width:200px">
+        <option value="usuario">VIGILANTE (SIN CLAVE)</option>
+        <option value="admin">ADMINISTRADOR</option>
+      </select>
+    </div>
+    <button class="BN BP" id="BAU">+ CREAR USUARIO</button>
+    <div class="CD" style="margin-top:10px"><div class="TS"><table>
       <thead><tr><th>USUARIO</th><th>ROL</th><th>CLAVE</th><th></th></tr></thead>
-      <tbody id="adm-u-tbody"></tbody>
+      <tbody id="AUT"></tbody>
     </table></div></div>
   </div>
-  <div class="card" style="padding:16px">
-    <div style="font-family:Georgia,serif;font-size:15px;font-weight:700;color:var(--navy);margin-bottom:12px">💰 TARIFAS DEL SISTEMA</div>
-    <div class="card"><div class="table-scroll"><table>
-      <thead><tr><th>SERVICIO</th><th>TARIFA ACTUAL</th><th>DESCRIPCIÓN</th><th></th></tr></thead>
-      <tbody id="adm-tar-tbody"></tbody>
+  <!-- TARIFAS -->
+  <div class="CD" style="padding:14px">
+    <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px">💰 TARIFAS DEL SISTEMA</div>
+    <div class="CD"><div class="TS"><table>
+      <thead><tr><th>SERVICIO</th><th>TARIFA ACTUAL</th><th>UNIDAD</th><th></th></tr></thead>
+      <tbody id="ATT"></tbody>
     </table></div></div>
   </div>
 </div>
 </main>
-
-<!-- LIBRARIES -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
-<!-- FIREBASE -->
 <script type="module">
 import{initializeApp}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import{getFirestore,collection,doc,setDoc,deleteDoc,onSnapshot,getDoc,getDocs,query,orderBy}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-import{getMessaging,getToken,onMessage}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js';
-
-const firebaseConfig={
-  apiKey:"AIzaSyDjrB4MJS5iQZ65918N6HV05nDcv5gwPKQ",
-  authDomain:"servibuques2.firebaseapp.com",
-  projectId:"servibuques2",
-  storageBucket:"servibuques2.firebasestorage.app",
-  messagingSenderId:"889343061906",
-  appId:"1:889343061906:web:e612d61d46f2d135069b4b"
-};
-
-const fbApp=initializeApp(firebaseConfig);
-const db=getFirestore(fbApp);
-
+import{getFirestore,collection,doc,setDoc,deleteDoc,onSnapshot,getDoc}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+const FB={apiKey:"AIzaSyDjrB4MJS5iQZ65918N6HV05nDcv5gwPKQ",authDomain:"servibuques2.firebaseapp.com",projectId:"servibuques2",storageBucket:"servibuques2.firebasestorage.app",messagingSenderId:"889343061906",appId:"1:889343061906:web:e612d61d46f2d135069b4b"};
+const app=initializeApp(FB);
+const db=getFirestore(app);
 // ── CONSTANTS ──
-const DEFAULT_TARIFAS={
-  e110:{label:'⚡ ENERGÍA 110V',valor:2500,unidad:'hora',editable:true},
-  e220:{label:'⚡ ENERGÍA 220V',valor:3500,unidad:'hora',editable:true},
-  agua:{label:'💧 AGUA',valor:35000,unidad:'servicio',editable:true},
-  playa:{label:'⚙️ ASTILLERO',valor:70000,unidad:'día',editable:true},
-};
-let T_E110=2500,T_E220=3500,T_AGUA=35000,T_PLAYA=70000;
-const VTARIFAS=[
-  {tipo:'CARRETA',valor:2250},{tipo:'MOTOCICLETA',valor:2250},{tipo:'TAXI',valor:4500},
-  {tipo:'MINIVANS',valor:6500},{tipo:'CARPATI',valor:6500},{tipo:'CAMIONETA',valor:8000},
-  {tipo:'TURBO PEQUEÑA',valor:13500},{tipo:'CARRO TANQUE PEQUEÑO',valor:17000},
-  {tipo:'CARRO TANQUE GRANDE',valor:20000},{tipo:'CAMIÓN 600',valor:20000},
-  {tipo:'TURBO GRANDE',valor:20000},{tipo:'DOBLE TROQUE',valor:28000},
-  {tipo:'VOLQUETA',valor:28000},{tipo:'GRÚA',valor:50000},
-  {tipo:'TRACTOMULA',valor:50000},{tipo:'MONTACARGA',valor:35000},{tipo:'OTRO',valor:0}
+let T110=2500,T220=3500,TAGUA=35000,TPLAYA=70000;
+const VTYPES=[
+  {t:'CARRETA',v:2250},{t:'MOTOCICLETA',v:2250},{t:'TAXI',v:4500},{t:'MINIVANS',v:6500},
+  {t:'CARPATI',v:6500},{t:'CAMIONETA',v:8000},{t:'TURBO PEQUEÑA',v:13500},
+  {t:'CARRO TANQUE PEQUEÑO',v:17000},{t:'CARRO TANQUE GRANDE',v:20000},
+  {t:'CAMIÓN 600',v:20000},{t:'TURBO GRANDE',v:20000},{t:'DOBLE TROQUE',v:28000},
+  {t:'VOLQUETA',v:28000},{t:'GRÚA',v:50000},{t:'TRACTOMULA',v:50000},
+  {t:'MONTACARGA',v:35000},{t:'OTRO',v:0}
 ];
-
-// ── LOCAL STATE ──
-let DB={muellaje:[],energia:[],agua:[],bodegaje:[],vehiculos:[],playa:[],arriendos:[]};
-let CFG={
-  tarifas:{e110:2500,e220:3500,agua:35000,playa:70000},embarcaciones:['CRISMAR','GREYCI JIRETH','KARINA MAR','ÑENGO'],usuarios:[{name:'ADMIN',pass:'admin2024',rol:'admin'},{name:'VIGILANTE 1',pass:'',rol:'usuario'}]};
-let CU=null;
-let unsubscribers=[];
-
+// ── STATE ──
+let DB={m:[],e:[],a:[],b:[],v:[],p:[],ar:[]};
+let CFG={embs:[],users:[{name:'ADMIN',pass:'admin2024',rol:'admin'},{name:'VIGILANTE 1',pass:'',rol:'usuario'}],tar:{e110:2500,e220:3500,agua:35000,playa:70000}};
+let CU=null,UNSUBS=[],SEL={m:new Set(),e:new Set(),a:new Set(),b:new Set(),v:new Set(),p:new Set(),ar:new Set()};
 // ── HELPERS ──
 const fmt=n=>'$'+Number(n||0).toLocaleString('es-CO');
-const fmtD=s=>{if(!s)return'—';const d=new Date(s);return d.toLocaleDateString('es-CO',{day:'2-digit',month:'2-digit',year:'2-digit'})+' '+d.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});};
-const fmtDF=s=>{if(!s)return'—';const d=new Date(s);const ms=['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];return`${d.getDate()}-${ms[d.getMonth()]}-${d.getFullYear()} ${d.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'})}`;};
-const nowStr=()=>new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,16);
-const diffH=(a,b)=>Math.max(0,(new Date(b)-new Date(a))/3600000);
-const diffD=(a,b)=>Math.max(0,(new Date(b)-new Date(a))/86400000);
+const fD=s=>{if(!s)return'—';const d=new Date(s);return d.toLocaleDateString('es-CO',{day:'2-digit',month:'2-digit',year:'2-digit'})+' '+d.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});};
+const fDF=s=>{if(!s)return'—';const d=new Date(s);const ms=['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];return`${d.getDate()}-${ms[d.getMonth()]}-${d.getFullYear()} ${d.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'})}`;};
+const now=()=>new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,16);
+const dH=(a,b)=>Math.max(0,(new Date(b)-new Date(a))/3600000);
+const dD=(a,b)=>Math.max(0,(new Date(b)-new Date(a))/86400000);
 const uc=s=>(s||'').toUpperCase();
-const genId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-const isAdmin=()=>CU&&CU.rol==='admin';
-
-// ── SYNC UI ──
-const syncBar=document.getElementById('sync-bar');
-const syncDot=document.getElementById('sync-dot');
-function setSyncing(){syncBar.className='loading';syncDot.className='sync-dot syncing';}
-function setSynced(){syncBar.className='done';syncDot.className='sync-dot online';setTimeout(()=>syncBar.className='',600);}
-function setOffline(){syncDot.className='sync-dot';}
-
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+const isA=()=>CU?.rol==='admin';
+const r10=n=>Math.round(n*10)/10;
+// ── SYNC ──
+const SD=document.getElementById('SD');
+const sync=on=>SD.className='SD'+(on?' on':'');
+// ── FIREBASE ──
+async function save(col,rec){
+  try{await setDoc(doc(db,col,rec.id),{...rec,_ts:Date.now(),_u:CU?.name||'?'});sync(true);}
+  catch(e){console.error('save',e);toast('ERROR AL GUARDAR','er');}
+}
+async function del(col,id){
+  try{await deleteDoc(doc(db,col,id));sync(true);}
+  catch(e){console.error('del',e);}
+}
+async function saveCFG(){
+  try{
+    await setDoc(doc(db,'_cfg','embs'),{v:CFG.embs});
+    await setDoc(doc(db,'_cfg','users'),{v:CFG.users});
+    await setDoc(doc(db,'_cfg','tar'),{v:CFG.tar});
+  }catch(e){console.error('saveCFG',e);}
+}
+function applyTar(){T110=CFG.tar.e110||2500;T220=CFG.tar.e220||3500;TAGUA=CFG.tar.agua||35000;TPLAYA=CFG.tar.playa||70000;}
 // ── TOAST ──
-let toastT;
-window.toast=(m,t='ok')=>{const el=document.getElementById('toast');el.textContent=m;el.className='alert '+t+' show';clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),3000);};
-window.openModal=h=>{
-  const bg=document.getElementById('modal-bg');
-  const body=document.getElementById('modal-body');
-  body.innerHTML=h;
-  bg.classList.add('open');
-  bg.style.display='flex';
-};
-window.closeModal=()=>{
-  const bg=document.getElementById('modal-bg');
-  bg.classList.remove('open');
-  bg.style.display='none';
-  document.getElementById('modal-body').innerHTML='';
-};
-window.showTab=t=>{
-  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(tb=>tb.classList.remove('active'));
-  const sec=document.getElementById('sec-'+t);if(sec)sec.classList.add('active');
-  [...document.querySelectorAll('.tab')].find(tb=>tb.getAttribute('onclick')===`showTab('${t}')`)?.classList.add('active');
+let TT2;
+function toast(m,t='ok'){const el=document.getElementById('TT');el.textContent=m;el.className='AL sh '+t;clearTimeout(TT2);TT2=setTimeout(()=>el.classList.remove('sh'),3000);}
+// ── MODAL ──
+function openM(h){const bg=document.getElementById('MB');const bd=document.getElementById('MBD');bd.innerHTML=h;bg.classList.add('op');bg.style.display='flex';}
+function closeM(){const bg=document.getElementById('MB');bg.classList.remove('op');bg.style.display='none';document.getElementById('MBD').innerHTML='';}
+document.getElementById('MB').addEventListener('click',e=>{if(e.target===document.getElementById('MB'))closeM();});
+// ── TABS ──
+function showTab(t){
+  document.querySelectorAll('.SEC').forEach(s=>s.classList.remove('act'));
+  document.querySelectorAll('.TB').forEach(b=>b.classList.remove('act'));
+  const s=document.getElementById('S-'+t);if(s)s.classList.add('act');
+  const b=[...document.querySelectorAll('.TB')].find(b=>b.dataset.tab===t);if(b)b.classList.add('act');
   window.scrollTo(0,0);
-  renderAll();
+  render();
+}
+document.querySelectorAll('.TB').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+// ── EMBARCACIONES SELECT ──
+function eS(id,val=''){
+  if(!CFG.embs||!CFG.embs.length)return`<select id="${id}" class="FI"><option value="">— AGREGUE CLIENTES EN ADMIN —</option></select>`;
+  return`<select id="${id}" class="FI"><option value="">— SELECCIONAR —</option>${CFG.embs.slice().sort().map(e=>`<option value="${e}"${e===val?' selected':''}>${e}</option>`).join('')}</select>`;
+}
+// ── CALCS ──
+const cM=r=>{if(!r.desde)return{d:'—',s:0};const dd=r10(dD(r.desde,r.hasta||now()));return{d:dd.toFixed(1),s:r10(dd*(r.tar||0))};};
+const cE=r=>{if(!r.desde)return{h:'—',s:0};const hh=r10(dH(r.desde,r.hasta||now()));return{h:hh.toFixed(1),s:r10(hh*(r.tar||0))};};
+const cA=r=>({s:r.hasta?r.tar||0:0});
+const cB=r=>{if(!r.desde)return{d:'—',s:0};const dd=r10(dD(r.desde,r.hasta||now()));return{d:dd.toFixed(1),s:r10(dd*(r.tar||0))};};
+const cP=r=>{if(!r.desde)return{d:'—',s:0};const dd=r10(dD(r.desde,r.hasta||now()));return{d:dd.toFixed(1),s:r10(dd*(r.tar||TPLAYA))};};
+const cAR=r=>{if(!r.desde||!r.hasta)return{m:'—',s:0};const mm=r10((new Date(r.hasta)-new Date(r.desde))/(1000*60*60*24*30));return{m:mm.toFixed(1),s:r10(mm*(r.vlr||0))+(r.ene||0)};};
+// ── BULK ──
+function updBulk(k,key){
+  const n=SEL[k].size;
+  const bar=document.getElementById('BK'+key);const cnt=document.getElementById('BC'+key);
+  if(bar){bar.classList.toggle('vi',n>0);}
+  if(cnt)cnt.textContent=n+' SEL.';
+}
+function togSel(k,id,cb){if(cb.checked)SEL[k].add(id);else SEL[k].delete(id);updBulk(k,k.toUpperCase());}
+function selAll(k,key,cb){
+  const rows=document.querySelectorAll('#'+key+'T input[type=checkbox][data-id]');
+  rows.forEach(r=>{r.checked=cb.checked;if(cb.checked)SEL[k].add(r.dataset.id);else SEL[k].delete(r.dataset.id);});
+  updBulk(k,k.toUpperCase());
+}
+async function bulkDel(k,key){
+  if(!isA()){toast('SOLO ADMIN PUEDE ELIMINAR','er');return;}
+  const ids=[...SEL[k]];if(!ids.length)return;
+  openM(`<div class="MT" style="color:var(--red)">⚠️ ELIMINAR ${ids.length} REGISTROS</div>
+  <p style="color:var(--muted);font-size:12px;margin-bottom:14px">¿SEGURO? NO SE PUEDE DESHACER.</p>
+  <div class="MA"><button class="BN BS2" onclick="closeM()">CANCELAR</button>
+  <button class="BN BP" style="background:var(--red)" id="CBD">SÍ, ELIMINAR</button></div>`);
+  document.getElementById('CBD').onclick=async()=>{for(const id of ids)await del(k,id);SEL[k].clear();updBulk(k,key);closeM();toast(ids.length+' ELIMINADOS','ok');};
+}
+// ── RENDER HELPERS ──
+function updFilter(fid,arr){
+  const s=document.getElementById(fid);if(!s)return;const c=s.value;
+  const cs=new Set(arr.map(r=>r.cliente||r.cli).filter(Boolean));
+  s.innerHTML='<option value="">TODOS LOS CLIENTES</option>';
+  [...cs].sort().forEach(x=>s.innerHTML+=`<option value="${x}"${x===c?' selected':''}>${x}</option>`);
+}
+function gF(id){const el=document.getElementById(id);return el?el.value:'';}
+function actBtn(id,fn){const el=document.getElementById(id);if(el)el.onclick=fn;}
+function rowBtns(k,id,editFn){return`<div class="BR2"><button class="BN BNS BE" onclick="(${editFn})('${id}')">✏️</button>${isA()?`<button class="BN BNS BD" onclick="dR('${k}','${id}')">✕</button>`:''}</div>`;}
+// ── DELETE SINGLE ──
+window.dR=(k,id)=>{
+  if(!isA()){toast('SOLO ADMIN','er');return;}
+  openM(`<div class="MT" style="color:var(--red)">⚠️ ELIMINAR REGISTRO</div>
+  <p style="color:var(--muted);font-size:12px;margin-bottom:14px">¿SEGURO? NO SE PUEDE DESHACER.</p>
+  <div class="MA"><button class="BN BS2" onclick="closeM()">CANCELAR</button>
+  <button class="BN BP" style="background:var(--red)" id="CDS">SÍ</button></div>`);
+  document.getElementById('CDS').onclick=async()=>{await del(k,id);closeM();toast('ELIMINADO','ok');};
 };
-const embSel=(id,val='')=>`<select id="${id}"><option value="">— SELECCIONAR —</option>${CFG.embarcaciones.map(e=>`<option value="${e}"${e===val?' selected':''}>${e}</option>`).join('')}</select>`;
-window.upcase=id=>{const el=document.getElementById(id);if(el)el.value=el.value.toUpperCase();};
-
-// ── FIREBASE CRUD ──
-async function fbSave(tabla,rec){
-  setSyncing();
-  setDoc(doc(db,tabla,rec.id),{...rec,_ts:Date.now(),_user:CU?.name||'?'})
-    .then(()=>setSynced())
-    .catch(()=>{setOffline();toast('SIN CONEXIÓN — REINTENTANDO...','warn');});
-  return true;
-}
-async function fbDel(tabla,id){
-  setSyncing();
-  try{await deleteDoc(doc(db,tabla,id));setSynced();}
-  catch(e){setOffline();}
-}
-async function fbSaveCfg(){
-  try{
-    await setDoc(doc(db,'_config','embarcaciones'),{lista:CFG.embarcaciones});
-    await setDoc(doc(db,'_config','usuarios'),{lista:CFG.usuarios});
-    await setDoc(doc(db,'_config','tarifas'),{data:CFG.tarifas});
-  }catch(e){console.warn('cfg save fail',e);}
-}
-function applyTarifas(){
-  T_E110=CFG.tarifas.e110||2500;
-  T_E220=CFG.tarifas.e220||3500;
-  T_AGUA=CFG.tarifas.agua||35000;
-  T_PLAYA=CFG.tarifas.playa||70000;
-}
-
-// ── REALTIME LISTENERS ──
-function migrateRecord(r, tabla){
-  // Backward compatibility: map old model fields to new desde/hasta model
-  // Copy fecha to desde if desde is missing
-  if(!r.desde){
-    r.desde = r.fecha || r._ts ? (r.fecha || new Date(r._ts).toISOString().slice(0,16)) : '';
-  }
-  // For closing events, set hasta = fecha
-  if(!r.hasta && r.accion){
-    if(tabla==='muellaje' && r.accion==='ZARPA') r.hasta = r.fecha;
-    if(tabla==='energia' && r.accion==='DESCONECTA') r.hasta = r.fecha;
-    if(tabla==='agua' && r.accion==='DESCONECTA') r.hasta = r.fecha;
-    if(tabla==='bodegaje' && (r.accion==='SALE'||r.accion==='CORTE')) r.hasta = r.fecha;
-    if(tabla==='playa' && r.accion==='SALE DE PLAYA') r.hasta = r.fecha;
-    // Opening events: hasta stays empty (open)
-  }
-  // For energia, add linea if missing
-  if(tabla==='energia' && !r.linea){
-    r.linea = r.volt==='220' ? 'LÍNEA ÚNICA' : 'LÍNEA 1';
-  }
-  // Filter out old "closing" records (ZARPA, DESCONECTA, SALE) that are now redundant
-  // They will be represented by the hasta field on the opening record
-  // We mark them so renderX can skip them
-  if(r.accion==='ZARPA'||r.accion==='DESCONECTA'||(r.accion==='SALE'&&tabla==='bodegaje')||r.accion==='SALE DE PLAYA'||(r.accion==='CORTE'&&tabla==='bodegaje')){
-    r._isClosingRecord = true;
-  }
-  return r;
-}
-
-function startListeners(){
-  unsubscribers.forEach(u=>u());
-  unsubscribers=[];
-  // Show loading
-  const dash=document.getElementById('dash-tbody');
-  if(dash)dash.innerHTML='<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted);font-weight:700">⏳ CARGANDO DATOS...</td></tr>';
-
-  const tablas=['muellaje','energia','agua','bodegaje','vehiculos','playa','arriendos'];
-  let loaded=0;
-  tablas.forEach(tabla=>{
-    const unsub=onSnapshot(collection(db,tabla),snap=>{
-      DB[tabla]=snap.docs.map(d=>migrateRecord({...d.data()},tabla));
-      loaded++;
-      renderAll();
-      setSynced();
-    },err=>{
-      setOffline();
-      console.warn(tabla,err);
-      toast('ERROR CARGANDO '+tabla.toUpperCase(),'err');
-    });
-    unsubscribers.push(unsub);
-  });
-  // Config listener
-  const unsubCfg=onSnapshot(collection(db,'_config'),snap=>{
-    let changed=false;
-    snap.docs.forEach(d=>{
-      if(d.id==='embarcaciones'&&d.data().lista&&d.data().lista.length>0){CFG.embarcaciones=d.data().lista;changed=true;}
-      if(d.id==='usuarios'&&d.data().lista&&d.data().lista.length>0){CFG.usuarios=d.data().lista;changed=true;}
-      if(d.id==='tarifas'&&d.data().data){CFG.tarifas={...CFG.tarifas,...d.data().data};applyTarifas();changed=true;}
-    });
-    if(changed){populateUsers();renderAll();}
-  });
-  unsubscribers.push(unsubCfg);
-}
-
-// ── AUTH ──
-window.populateUsers=()=>{
-  const s=document.getElementById('li-user');
-  s.innerHTML='<option value="">— SELECCIONAR —</option>';
-  CFG.usuarios.forEach((u,i)=>s.innerHTML+=`<option value="${i}">${u.name}</option>`);
-  s.onchange=()=>{
-    const idx=s.value;const pw=document.getElementById('li-pass-wrap');
-    pw.style.display=(idx===''||CFG.usuarios[+idx]?.rol==='admin')?'block':'none';
-  };
-};
-window.doLogin=()=>{
-  const idx=document.getElementById('li-user').value;
-  const pass=document.getElementById('li-pass').value;
-  const err=document.getElementById('li-err');
-  if(!idx){err.textContent='SELECCIONA UN USUARIO';return;}
-  const u=CFG.usuarios[+idx];
-  if(u.rol==='admin'&&u.pass!==pass){err.textContent='CONTRASEÑA INCORRECTA';return;}
-  CU=u;err.textContent='';document.getElementById('li-pass').value='';
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('h-name').textContent=u.name;
-  document.getElementById('h-role').innerHTML=u.rol==='admin'?'<span class="role-badge role-admin">ADMIN</span>':'<span class="role-badge role-user">VIGILANTE</span>';
-  if(u.rol==='admin')document.querySelectorAll('.admin-only').forEach(el=>el.style.display='flex');
-  startListeners();
-  renderAll();
-  toast('BIENVENIDO, '+u.name,'ok');
-  // Show notif banner after 3s
-  setTimeout(()=>{if(Notification.permission==='default')document.getElementById('notif-banner').style.display='block';},3000);
-};
-window.doLogout=()=>{
-  CU=null;unsubscribers.forEach(u=>u());unsubscribers=[];
-  document.getElementById('login-screen').style.display='flex';
-  document.querySelectorAll('.admin-only').forEach(el=>el.style.display='none');
-  populateUsers();showTab('dashboard');
-};
-
-// ── NOTIFICATIONS ──
-window.pedirNotificaciones=async()=>{
-  document.getElementById('notif-banner').style.display='none';
-  try{
-    const perm=await Notification.requestPermission();
-    if(perm==='granted'){
-      toast('✅ NOTIFICACIONES ACTIVADAS','ok');
-      new Notification('SERVIBUQUES',{body:'NOTIFICACIONES ACTIVADAS CORRECTAMENTE',icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">⚓</text></svg>'});
-    }
-  }catch(e){toast('NO SE PUDIERON ACTIVAR LAS NOTIFICACIONES','warn');}
-};
-function enviarNotif(titulo,cuerpo){
-  if(Notification.permission==='granted'){
-    new Notification(titulo,{body:cuerpo,icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">⚓</text></svg>'});
-  }
-}
-
 // ── MUELLAJE ──
-// ── MUELLAJE (desde/hasta model) ──
-window.openMuellaje=eid=>{
-  const r=eid?DB.muellaje.find(x=>x.id===eid):null;
-  openModal(`<div class="modal-title">⚓ ${r?'EDITAR':'NUEVO'} REGISTRO DE MUELLAJE</div>
-  <div class="form-grid g2">
-    <div class="field"><label>EMBARCACIÓN *</label>${embSel('fm-cli',r?.cliente)}</div>
-    <div class="field"><label>TARIFA POR DÍA (COP)</label><input type="number" id="fm-tar" value="${r?.tarifa??35000}"></div>
-    <div class="field"><label>FECHA DESDE (ATRAQUE) *</label><input type="datetime-local" id="fm-desde" value="${r?.desde||nowStr()}"></div>
-    <div class="field"><label>FECHA HASTA (ZARPE) — DEJAR VACÍO SI AÚN ESTÁ</label><input type="datetime-local" id="fm-hasta" value="${r?.hasta||''}"></div>
-    <div class="field" style="grid-column:span 2"><label>NOTAS</label><textarea id="fm-notas" oninput="upcase('fm-notas')">${r?.notas||''}</textarea></div>
+function openMuellaje(eid){
+  const r=eid?DB.m.find(x=>x.id===eid):null;
+  openM(`<div class="MT">⚓ ${r?'EDITAR':'NUEVO'} MUELLAJE</div>
+  <div class="FG G2">
+    <div><label class="FL">EMBARCACIÓN *</label>${eS('fmc',r?.cliente)}</div>
+    <div><label class="FL">TARIFA POR DÍA (COP)</label><input class="FI" type="number" id="fmt" value="${r?.tar??35000}"></div>
+    <div><label class="FL">FECHA DESDE (ATRAQUE) *</label><input class="FI" type="datetime-local" id="fmd" value="${r?.desde||now()}"></div>
+    <div><label class="FL">FECHA HASTA (ZARPE) — VACÍO SI AÚN ESTÁ</label><input class="FI" type="datetime-local" id="fmh" value="${r?.hasta||''}"></div>
+    <div style="grid-column:span 2"><label class="FL">NOTAS</label><textarea class="FI" id="fmn" oninput="this.value=this.value.toUpperCase()">${r?.notas||''}</textarea></div>
   </div>
-  <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal()">CANCELAR</button><button class="btn btn-primary" onclick="saveMuellaje('${eid||''}')">✓ GUARDAR</button></div>`);
-};
-window.saveMuellaje=async eid=>{
-  const btn=document.querySelector('#modal-body .btn-primary');
-  if(btn){btn.disabled=true;btn.textContent='⏳ GUARDANDO...';}
-  const cli=document.getElementById('fm-cli').value;
-  const desde=document.getElementById('fm-desde').value;
-  const hasta=document.getElementById('fm-hasta').value;
-  const tarifa=parseFloat(document.getElementById('fm-tar').value)||0;
-  const notas=uc(document.getElementById('fm-notas').value);
-  const fail=m=>{toast(m,'warn');if(btn){btn.disabled=false;btn.textContent='✓ GUARDAR';}};
-  if(!cli)return fail('SELECCIONA LA EMBARCACIÓN');
-  if(!desde)return fail('SELECCIONA FECHA DESDE');
-  if(hasta&&new Date(hasta)<=new Date(desde))return fail('⚠️ FECHA HASTA DEBE SER POSTERIOR A FECHA DESDE');
-  // Check no open muellaje for this client (unless editing same)
-  if(!eid){
-    const abierto=DB.muellaje.find(r=>r.cliente===cli&&!r.hasta);
-    if(abierto)return fail('⚠️ '+cli+' YA TIENE UN ATRAQUE SIN CERRAR — COMPLETE LA FECHA HASTA PRIMERO');
-  }
-  const rec={id:eid||genId(),cliente:cli,desde,hasta:hasta||'',tarifa,notas};
-  fbSave('muellaje',rec);
-  closeModal();showTab('muellaje');toast('✓ GUARDADO CORRECTAMENTE','ok');
-};
-const calcMuellaje=r=>{
-  if(!r.desde)return{dias:null,sub:0};
-  const end=r.hasta||nowStr();
-  const d=diffD(r.desde,end);
-  const dias=Math.round(d*10)/10;
-  return{dias:dias.toFixed(1),sub:Math.round(dias*(r.tarifa||0)*10)/10};
-};
+  <div class="MA"><button class="BN BS2" onclick="closeM()">CANCELAR</button><button class="BN BP" id="SMB">✓ GUARDAR</button></div>`);
+  document.getElementById('SMB').onclick=()=>saveMuellaje(eid||'');
+}
+async function saveMuellaje(eid){
+  const cli=document.getElementById('fmc').value;
+  const tar=parseFloat(document.getElementById('fmt').value)||0;
+  const desde=document.getElementById('fmd').value;
+  const hasta=document.getElementById('fmh').value;
+  const notas=uc(document.getElementById('fmn').value);
+  if(!cli)return toast('SELECCIONA LA EMBARCACIÓN','er');
+  if(!desde)return toast('SELECCIONA FECHA DESDE','er');
+  if(hasta&&new Date(hasta)<=new Date(desde))return toast('⚠️ FECHA HASTA DEBE SER POSTERIOR','wa');
+  if(!eid){const ab=DB.m.find(r=>r.cliente===cli&&!r.hasta);if(ab)return toast('⚠️ '+cli+' YA TIENE ATRAQUE ACTIVO — EDITA ESE REGISTRO PRIMERO','wa');}
+  const rec={id:eid||uid(),cliente:cli,tar,desde,hasta:hasta||'',notas};
+  await save('m',rec);closeM();showTab('muellaje');toast('GUARDADO ✓','ok');
+}
 function renderMuellaje(){
-  updateFilterOptions('muellaje','m',DB.muellaje);
-  const fCli=getFilter('m','cli'),fEv=getFilter('m','ev');
-  const tb=document.getElementById('m-tbody');
-  const rows=DB.muellaje.filter(r=>(!fCli||r.cliente===fCli)&&(!fEv||r.accion===fEv)).sort((a,b)=>b.fecha>a.fecha?1:-1);
-  if(!rows.length){tb.innerHTML='<tr><td colspan="9"><div class="empty-state"><div class="ico">⚓</div><p>SIN REGISTROS</p></div></td></tr>';return;}
+  updFilter('FMC',DB.m);
+  const fc=gF('FMC');
+  const rows=DB.m.filter(r=>!fc||r.cliente===fc).sort((a,b)=>b.desde>a.desde?1:-1);
+  const tb=document.getElementById('MT');
+  if(!rows.length){tb.innerHTML='<tr><td colspan="9"><div class="ES"><div class="EI">⚓</div><p>SIN REGISTROS</p></div></td></tr>';return;}
   tb.innerHTML=rows.map(r=>{
-    const{dias,sub}=calcMuellaje(r);const ia=r.accion==='ATRACA';
-    const act=ia&&!DB.muellaje.find(d=>d.cliente===r.cliente&&d.accion==='ZARPA'&&d.fecha>r.fecha);
-    const sel=SELECTED.muellaje.has(r.id);
-    return`<tr><td><input type="checkbox" data-id="${r.id}" ${sel?'checked':''} onchange="togSel('muellaje','${r.id}',this)"></td>
-    <td><b>${r.cliente}</b>${act?'<br><span class="bs bg-green">EN MUELLE</span>':''}</td>
-    <td><span class="bs ${ia?'bg-green':'bg-amber'}">${r.accion}</span></td>
-    <td style="white-space:nowrap">${fmtD(r.fecha)}</td>
-    <td class="mono">${dias!==null?dias+'D':'—'}</td>
-    <td class="mono">${r.tarifa?fmt(r.tarifa):'<span class="muted">—</span>'}</td>
-    <td class="mono val-ok">${sub?fmt(sub):'<span class="muted">—</span>'}</td>
-    <td style="font-size:11px">${r.notas||'—'}</td>
-    <td><div class="btn-row"><button class="btn btn-sm btn-edit" onclick="openMuellaje('${r.id}')">✏️</button>${isAdmin()?`<button class="btn btn-sm btn-del" onclick="delReg('muellaje','${r.id}')">✕</button>`:''}</div></td></tr>`;
+    const{d,s}=cM(r);const ab=!r.hasta;const sel=SEL.m.has(r.id);
+    return`<tr><td><input type="checkbox" data-id="${r.id}" ${sel?'checked':''} onchange="togSel('m','${r.id}',this)"></td>
+    <td><b>${r.cliente}</b>${ab?'<br><span class="BS BG">EN MUELLE</span>':''}</td>
+    <td style="white-space:nowrap">${fD(r.desde)}</td>
+    <td style="white-space:nowrap">${r.hasta?fD(r.hasta):'<span class="BS BA">ABIERTO</span>'}</td>
+    <td class="MO">${d}D</td><td class="MO">${r.tar?fmt(r.tar):'—'}</td>
+    <td class="MO VO">${s?fmt(s):'—'}</td>
+    <td style="font-size:10px">${r.notas||'—'}</td>
+    <td>${rowBtns('m',r.id,'openMuellaje')}</td></tr>`;
   }).join('');
 }
-
-// ── UPDATED RENDER ENERGIA ──
-function renderEnergia(){
-  updateFilterOptions('energia','e',DB.energia);
-  let wh='';
-  [...new Set(DB.energia.map(r=>r.cliente))].forEach(cli=>['110','220'].forEach(v=>{
-    const rows=DB.energia.filter(r=>r.cliente===cli&&r.volt===v).sort((a,b)=>a.fecha>b.fecha?1:-1);
-    rows.forEach((r,i)=>{if(r.accion==='DESCONECTA'&&!rows.slice(0,i).reverse().find(x=>x.accion==='CONECTA'))wh+=`<div class="warn-box">⚠️ ${cli}: DESCONECTA ${v}V SIN CONECTA PREVIA — REVISAR (${fmtD(r.fecha)})</div>`;});
-  }));
-  document.getElementById('e-warns').innerHTML=wh;
-  const fCli=getFilter('e','cli'),fEv=getFilter('e','ev');
-  const tb=document.getElementById('e-tbody');
-  const rows=DB.energia.filter(r=>(!fCli||r.cliente===fCli)&&(!fEv||r.accion===fEv)).sort((a,b)=>b.fecha>a.fecha?1:-1);
-  if(!rows.length){tb.innerHTML='<tr><td colspan="10"><div class="empty-state"><div class="ico">⚡</div><p>SIN REGISTROS</p></div></td></tr>';return;}
-  tb.innerHTML=rows.map(r=>{
-    const ic=r.accion==='CONECTA';const{horas,sub}=calcEnergia(r);
-    const enC=ic&&!DB.energia.find(d=>d.cliente===r.cliente&&d.accion==='DESCONECTA'&&d.volt===r.volt&&d.fecha>r.fecha);
-    const sel=SELECTED.energia.has(r.id);
-    return`<tr><td><input type="checkbox" data-id="${r.id}" ${sel?'checked':''} onchange="togSel('energia','${r.id}',this)"></td>
-    <td><b>${r.cliente}</b></td><td><span class="bs ${ic?'bg-green':'bg-red'}">${r.accion}</span>${enC?'<span class="bs bg-amber" style="margin-left:3px">EN CURSO</span>':''}</td>
-    <td class="mono">${r.volt}V</td><td style="white-space:nowrap">${fmtD(r.fecha)}</td>
-    <td class="mono">${fmt(r.tarifa)}</td><td class="mono">${horas!==null?horas+'H':enC?'<span class="muted">EN CURSO</span>':'—'}</td>
-    <td class="mono val-ok">${sub?fmt(sub):'<span class="muted">—</span>'}</td>
-    <td style="font-size:11px">${r.notas||'—'}</td>
-    <td><div class="btn-row"><button class="btn btn-sm btn-edit" onclick="openEnergia('${r.id}')">✏️</button>${isAdmin()?`<button class="btn btn-sm btn-del" onclick="delReg('energia','${r.id}')">✕</button>`:''}</div></td></tr>`;
-  }).join('');
-}
-
-// ── UPDATED RENDER AGUA ──
-function renderAgua(){
-  updateFilterOptions('agua','a',DB.agua);
-  const fCli=getFilter('a','cli'),fEv=getFilter('a','ev');
-  const tb=document.getElementById('a-tbody');
-  const rows=DB.agua.filter(r=>(!fCli||r.cliente===fCli)&&(!fEv||r.accion===fEv)).sort((a,b)=>b.fecha>a.fecha?1:-1);
-  if(!rows.length){tb.innerHTML='<tr><td colspan="8"><div class="empty-state"><div class="ico">💧</div><p>SIN REGISTROS</p></div></td></tr>';return;}
-  tb.innerHTML=rows.map(r=>{
-    const ic=r.accion==='CONECTA';const{sub}=calcAgua(r);
-    const enC=ic&&!DB.agua.find(d=>d.cliente===r.cliente&&d.accion==='DESCONECTA'&&d.fecha>r.fecha);
-    const sel=SELECTED.agua.has(r.id);
-    return`<tr><td><input type="checkbox" data-id="${r.id}" ${sel?'checked':''} onchange="togSel('agua','${r.id}',this)"></td>
-    <td><b>${r.cliente}</b></td><td><span class="bs ${ic?'bg-teal':'bg-gray'}">${r.accion} AGUA</span>${enC?'<span class="bs bg-amber" style="margin-left:3px">EN CURSO</span>':''}</td>
-    <td style="white-space:nowrap">${fmtD(r.fecha)}</td>
-    <td class="mono">${fmt(r.tarifa)}${r.tarifa!==T_AGUA?'<span class="bs bg-amber" style="margin-left:3px">ESP.</span>':''}</td>
-    <td class="mono val-ok">${sub?fmt(sub):'<span class="muted">—</span>'}</td>
-    <td style="font-size:11px">${r.notas||'—'}</td>
-    <td><div class="btn-row"><button class="btn btn-sm btn-edit" onclick="openAgua('${r.id}')">✏️</button>${isAdmin()?`<button class="btn btn-sm btn-del" onclick="delReg('agua','${r.id}')">✕</button>`:''}</div></td></tr>`;
-  }).join('');
-}
-
-// ── UPDATED RENDER BODEGAJE ──
-function renderBodegaje(){
-  updateFilterOptions('bodegaje','b',DB.bodegaje);
-  const fCli=getFilter('b','cli'),fEv=getFilter('b','ev');
-  const tb=document.getElementById('b-tbody');
-  const rows=DB.bodegaje.filter(r=>(!fCli||r.cliente===fCli)&&(!fEv||r.accion===fEv)).sort((a,b)=>b.fecha>a.fecha?1:-1);
-  if(!rows.length){tb.innerHTML='<tr><td colspan="10"><div class="empty-state"><div class="ico">📦</div><p>SIN REGISTROS</p></div></td></tr>';return;}
-  const cm={INGRESA:'bg-teal',SALE:'bg-amber',CORTE:'bg-gray'};
-  tb.innerHTML=rows.map(r=>{
-    const{dias,sub}=calcBodegaje(r);const sel=SELECTED.bodegaje.has(r.id);
-    return`<tr><td><input type="checkbox" data-id="${r.id}" ${sel?'checked':''} onchange="togSel('bodegaje','${r.id}',this)"></td>
-    <td><b>${r.cliente}</b></td><td><span class="bs ${cm[r.accion]||'bg-gray'}">${r.accion}</span></td>
-    <td style="font-size:11px;max-width:120px">${r.mercancia||'—'}</td>
-    <td>${r.foto?`<img src="${r.foto}" class="photo-preview" onclick="verFoto('${r.id}')">`:'-'}</td>
-    <td style="white-space:nowrap">${fmtD(r.fecha)}</td>
-    <td class="mono">${dias!==null?dias+'D':'—'}</td>
-    <td class="mono">${r.tarifa?fmt(r.tarifa):'<span class="muted">—</span>'}</td>
-    <td class="mono val-ok">${sub?fmt(sub):'<span class="muted">—</span>'}</td>
-    <td><div class="btn-row"><button class="btn btn-sm btn-edit" onclick="openBodegaje('${r.id}')">✏️</button>${isAdmin()?`<button class="btn btn-sm btn-del" onclick="delReg('bodegaje','${r.id}')">✕</button>`:''}</div></td></tr>`;
-  }).join('');
-}
-
-// ── UPDATED RENDER VEHICULOS ──
-function renderVehiculos(){
-  updateFilterOptions('vehiculos','v',DB.vehiculos);
-  const fCli=getFilter('v','cli');
-  const tb=document.getElementById('v-tbody');
-  const rows=DB.vehiculos.filter(r=>!fCli||r.cliente===fCli).sort((a,b)=>b.fecha>a.fecha?1:-1);
-  if(!rows.length){tb.innerHTML='<tr><td colspan="9"><div class="empty-state"><div class="ico">🚗</div><p>SIN REGISTROS</p></div></td></tr>';return;}
-  tb.innerHTML=rows.map(r=>{const sel=SELECTED.vehiculos.has(r.id);return`<tr>
-    <td><input type="checkbox" data-id="${r.id}" ${sel?'checked':''} onchange="togSel('vehiculos','${r.id}',this)"></td>
-    <td><b>${r.cliente}</b></td><td><span class="bs bg-blue">${r.tipo}</span></td>
-    <td class="mono" style="color:var(--amber);font-weight:700">${r.placa||'—'}</td>
-    <td style="font-size:11px;max-width:110px">${r.mercancia||'—'}</td>
-    <td style="font-size:11px">${r.autoriza||'—'}</td>
-    <td style="white-space:nowrap">${fmtD(r.fecha)}</td>
-    <td class="mono val-ok">${r.valor?fmt(r.valor):'<span class="muted">—</span>'}</td>
-    <td><div class="btn-row"><button class="btn btn-sm btn-edit" onclick="openVehiculo('${r.id}')">✏️</button>${isAdmin()?`<button class="btn btn-sm btn-del" onclick="delReg('vehiculos','${r.id}')">✕</button>`:''}</div></td></tr>`;}).join('');
-}
-
-// ── PLAYA ──
-const calcPlaya=r=>{
-  if(r.accion!=='INGRESA A PLAYA')return{dias:null,sub:0};
-  const s=DB.playa.filter(x=>x.cliente===r.cliente&&x.accion==='SALE DE PLAYA'&&x.fecha>r.fecha).sort((a,b)=>a.fecha>b.fecha?1:-1)[0];
-  const d=diffD(r.fecha,s?s.fecha:nowStr());
-  const dias=Math.round(d*10)/10;
-  return{dias:dias.toFixed(1),sub:Math.round(dias*r.tarifa*10)/10};
-};
-window.openPlaya=eid=>{
-  const r=eid?DB.playa.find(x=>x.id===eid):null;
-  openModal(`<div class="modal-title">🏖️ ${r?'EDITAR':'NUEVO'} REGISTRO DE PLAYA</div>
-  <div class="form-grid g2">
-    <div class="field"><label>CLIENTE *</label>${embSel('fp-cli',r?.cliente)}</div>
-    <div class="field"><label>EVENTO *</label><select id="fp-acc">
-      <option value="INGRESA A PLAYA"${!r||r.accion==='INGRESA A PLAYA'?' selected':''}>⬇️ INGRESA A PLAYA</option>
-      <option value="SALE DE PLAYA"${r?.accion==='SALE DE PLAYA'?' selected':''}>⬆️ SALE DE PLAYA</option>
+window.openMuellaje=openMuellaje;
+// ── ENERGÍA ──
+function openEnergia(eid){
+  const r=eid?DB.e.find(x=>x.id===eid):null;const v=r?.vol||'110';const li=r?.lin||'LÍNEA 1';
+  openM(`<div class="MT">⚡ ${r?'EDITAR':'NUEVO'} ENERGÍA</div>
+  <div class="FG G2">
+    <div><label class="FL">EMBARCACIÓN *</label>${eS('fec',r?.cliente)}</div>
+    <div><label class="FL">VOLTAJE *</label><select class="FI" id="fev" onchange="updV()">
+      <option value="110"${v==='110'?' selected':''}>110 VOLTIOS</option>
+      <option value="220"${v==='220'?' selected':''}>220 VOLTIOS</option>
     </select></div>
-    <div class="field"><label>FECHA Y HORA *</label><input type="datetime-local" id="fp-fecha" value="${r?.fecha||nowStr()}"></div>
-    <div class="field"><label>TARIFA POR DÍA (COP)</label>
-      <input type="number" id="fp-tar" value="${r?.tarifa??70000}">
-      <div class="field-note">ESTÁNDAR: $70.000/DÍA — MODIFICA SI NEGOCIAS</div>
+    <div id="feli"><label class="FL">LÍNEA (110V — HASTA 3 SIMULTÁNEAS)</label>
+      <select class="FI" id="fel">
+        <option value="LÍNEA 1"${li==='LÍNEA 1'?' selected':''}>LÍNEA 1</option>
+        <option value="LÍNEA 2"${li==='LÍNEA 2'?' selected':''}>LÍNEA 2</option>
+        <option value="LÍNEA 3"${li==='LÍNEA 3'?' selected':''}>LÍNEA 3</option>
+      </select></div>
+    <div><label class="FL">TARIFA/HORA (AUTOMÁTICA)</label>
+      <div class="TF" id="fetd">${fmt(v==='110'?T110:T220)}</div>
+      <div class="FN">110V=${fmt(T110)}/H · 220V=${fmt(T220)}/H</div>
     </div>
-    <div class="field" style="grid-column:span 2"><label>NOTAS</label><textarea id="fp-notas" oninput="upcase('fp-notas')">${r?.notas||''}</textarea></div>
+    <div><label class="FL">FECHA DESDE (CONEXIÓN) *</label><input class="FI" type="datetime-local" id="fed" value="${r?.desde||now()}"></div>
+    <div><label class="FL">FECHA HASTA (DESCONEXIÓN) — VACÍO SI SIGUE ACTIVA</label><input class="FI" type="datetime-local" id="feh" value="${r?.hasta||''}"></div>
+    <div style="grid-column:span 2"><label class="FL">NOTAS</label><textarea class="FI" id="fen" oninput="this.value=this.value.toUpperCase()">${r?.notas||''}</textarea></div>
   </div>
-  <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal()">CANCELAR</button><button class="btn btn-primary" onclick="savePlaya('${eid||''}')">✓ GUARDAR</button></div>`);
+  <div class="MA"><button class="BN BS2" onclick="closeM()">CANCELAR</button><button class="BN BP" id="SEB">✓ GUARDAR</button></div>`);
+  document.getElementById('SEB').onclick=()=>saveEnergia(eid||'');
+  setTimeout(()=>{const lw=document.getElementById('feli');if(lw)lw.style.display=v==='220'?'none':'block';},10);
+}
+window.updV=()=>{
+  const v=document.getElementById('fev')?.value;
+  const d=document.getElementById('fetd');if(d&&v)d.textContent=fmt(v==='110'?T110:T220);
+  const lw=document.getElementById('feli');if(lw)lw.style.display=v==='220'?'none':'block';
 };
-window.savePlaya=async eid=>{
-  const btn=document.querySelector('#modal-body .btn-primary');
-  if(btn){btn.disabled=true;btn.textContent='⏳ GUARDANDO...';}
-  const cli=document.getElementById('fp-cli').value;
-  const acc=document.getElementById('fp-acc').value;
-  const fecha=document.getElementById('fp-fecha').value;
-  const tarifa=parseFloat(document.getElementById('fp-tar').value)||70000;
-  const notas=uc(document.getElementById('fp-notas').value);
-  const fail=m=>{toast(m,'warn');if(btn){btn.disabled=false;btn.textContent='✓ GUARDAR';}};
-  if(!cli)return fail('SELECCIONA EL CLIENTE');
-  if(!fecha)return fail('SELECCIONA FECHA Y HORA');
-  if(acc==='SALE DE PLAYA'&&!DB.playa.find(r=>r.cliente===cli&&r.accion==='INGRESA A PLAYA'&&r.fecha<fecha))return fail('⚠️ NO HAY INGRESO A PLAYA PREVIO PARA ESTE CLIENTE');
-  const rec={id:eid||genId(),cliente:cli,accion:acc,fecha,tarifa,notas};
-  fbSave('playa',rec);
-  closeModal();showTab('playa');toast('✓ GUARDADO CORRECTAMENTE','ok');
-};
-function renderPlaya(){
-  updateFilterOptions('playa','p',DB.playa||[]);
-  const fCli=getFilter('p','cli'),fEv=getFilter('p','ev');
-  const tb=document.getElementById('p-tbody');
-  const rows=(DB.playa||[]).filter(r=>(!fCli||r.cliente===fCli)&&(!fEv||r.accion===fEv)).sort((a,b)=>b.fecha>a.fecha?1:-1);
-  if(!rows.length){tb.innerHTML='<tr><td colspan="9"><div class="empty-state"><div class="ico">🏖️</div><p>SIN REGISTROS</p></div></td></tr>';return;}
+async function saveEnergia(eid){
+  const cli=document.getElementById('fec').value;
+  const vol=document.getElementById('fev').value;
+  const linEl=document.getElementById('fel');
+  const lin=vol==='110'?(linEl?linEl.value:'LÍNEA 1'):'ÚNICA';
+  const desde=document.getElementById('fed').value;
+  const hasta=document.getElementById('feh').value;
+  const notas=uc(document.getElementById('fen').value);
+  const tar=vol==='110'?T110:T220;
+  if(!cli)return toast('SELECCIONA LA EMBARCACIÓN','er');
+  if(!desde)return toast('SELECCIONA FECHA DESDE','er');
+  if(hasta&&new Date(hasta)<=new Date(desde))return toast('⚠️ FECHA HASTA DEBE SER POSTERIOR','wa');
+  if(hasta&&dH(desde,hasta)<(5/60))return toast('⚠️ MENOS DE 5 MIN — VERIFICA LAS FECHAS','wa');
+  if(!eid){const ab=DB.e.find(r=>r.cliente===cli&&r.vol===vol&&r.lin===lin&&!r.hasta);if(ab)return toast(`⚠️ ${cli} YA TIENE ${vol}V ${lin} ACTIVA`,'wa');}
+  const rec={id:eid||uid(),cliente:cli,vol,lin,tar,desde,hasta:hasta||'',notas};
+  await save('e',rec);closeM();showTab('energia');toast('GUARDADO ✓','ok');
+}
+function renderEnergia(){
+  updFilter('FEC',DB.e);
+  const fc=gF('FEC');
+  // Warnings
+  const ab=DB.e.filter(r=>!r.hasta);
+  document.getElementById('EW').innerHTML=ab.length?ab.map(r=>`<div class="WB">⚡ ${r.cliente} — ${r.vol}V ${r.lin||''}: ACTIVO DESDE ${fD(r.desde)}</div>`).join(''):'';
+  const rows=DB.e.filter(r=>!fc||r.cliente===fc).sort((a,b)=>b.desde>a.desde?1:-1);
+  const tb=document.getElementById('ET');
+  if(!rows.length){tb.innerHTML='<tr><td colspan="10"><div class="ES"><div class="EI">⚡</div><p>SIN REGISTROS</p></div></td></tr>';return;}
   tb.innerHTML=rows.map(r=>{
-    const{dias,sub}=calcPlaya(r);const ia=r.accion==='INGRESA A PLAYA';const sel=SELECTED.playa.has(r.id);
-    return`<tr><td><input type="checkbox" data-id="${r.id}" ${sel?'checked':''} onchange="togSel('playa','${r.id}',this)"></td>
-    <td><b>${r.cliente}</b></td><td><span class="bs ${ia?'bg-teal':'bg-amber'}">${r.accion}</span></td>
-    <td style="white-space:nowrap">${fmtD(r.fecha)}</td>
-    <td class="mono">${dias!==null?dias+'D':'—'}</td>
-    <td class="mono">${r.tarifa?fmt(r.tarifa):'<span class="muted">—</span>'}</td>
-    <td class="mono val-ok">${sub?fmt(sub):'<span class="muted">—</span>'}</td>
-    <td style="font-size:11px">${r.notas||'—'}</td>
-    <td><div class="btn-row"><button class="btn btn-sm btn-edit" onclick="openPlaya('${r.id}')">✏️</button>${isAdmin()?`<button class="btn btn-sm btn-del" onclick="delReg('playa','${r.id}')">✕</button>`:''}</div></td></tr>`;
+    const{h,s}=cE(r);const ab=!r.hasta;const sel=SEL.e.has(r.id);
+    return`<tr><td><input type="checkbox" data-id="${r.id}" ${sel?'checked':''} onchange="togSel('e','${r.id}',this)"></td>
+    <td><b>${r.cliente}</b></td>
+    <td><span class="BS ${r.vol==='110'?'BT':'BB'}">${r.vol}V</span> ${r.vol==='110'&&r.lin?`<span class="BS BM">${r.lin}</span>`:''}</td>
+    <td style="white-space:nowrap">${fD(r.desde)}</td>
+    <td style="white-space:nowrap">${r.hasta?fD(r.hasta):'<span class="BS BA">ACTIVA</span>'}</td>
+    <td class="MO">${fmt(r.tar)}</td>
+    <td class="MO">${h}H</td>
+    <td class="MO VO">${s?fmt(s):'—'}</td>
+    <td style="font-size:10px">${r.notas||'—'}</td>
+    <td>${rowBtns('e',r.id,'openEnergia')}</td></tr>`;
   }).join('');
 }
-
+window.openEnergia=openEnergia;
+// ── AGUA ──
+function openAgua(eid){
+  const r=eid?DB.a.find(x=>x.id===eid):null;
+  openM(`<div class="MT">💧 ${r?'EDITAR':'NUEVO'} AGUA</div>
+  <div class="FG G2">
+    <div><label class="FL">EMBARCACIÓN *</label>${eS('fac',r?.cliente)}</div>
+    <div><label class="FL">TARIFA POR SERVICIO (COP)</label>
+      <input class="FI" type="number" id="fat" value="${r?.tar??TAGUA}">
+      <div class="FN">ESTÁNDAR: ${fmt(TAGUA)} — MODIFICA PARA TARIFA ESPECIAL</div>
+    </div>
+    <div><label class="FL">FECHA DESDE *</label><input class="FI" type="datetime-local" id="fad" value="${r?.desde||now()}"></div>
+    <div><label class="FL">FECHA HASTA — VACÍO SI SIGUE ACTIVO</label><input class="FI" type="datetime-local" id="fah" value="${r?.hasta||''}"></div>
+    <div style="grid-column:span 2"><label class="FL">NOTAS</label><textarea class="FI" id="fan" oninput="this.value=this.value.toUpperCase()">${r?.notas||''}</textarea></div>
+  </div>
+  <div class="MA"><button class="BN BS2" onclick="closeM()">CANCELAR</button><button class="BN BP" id="SAB2">✓ GUARDAR</button></div>`);
+  document.getElementById('SAB2').onclick=()=>saveAgua(eid||'');
+}
+async function saveAgua(eid){
+  const cli=document.getElementById('fac').value;
+  const tar=parseFloat(document.getElementById('fat').value)||TAGUA;
+  const desde=document.getElementById('fad').value;
+  const hasta=document.getElementById('fah').value;
+  const notas=uc(document.getElementById('fan').value);
+  if(!cli)return toast('SELECCIONA LA EMBARCACIÓN','er');
+  if(!desde)return toast('SELECCIONA FECHA DESDE','er');
+  if(hasta&&new Date(hasta)<=new Date(desde))return toast('⚠️ FECHA HASTA DEBE SER POSTERIOR','wa');
+  if(!eid){const ab=DB.a.find(r=>r.cliente===cli&&!r.hasta);if(ab)return toast('⚠️ '+cli+' YA TIENE AGUA ACTIVA','wa');}
+  const rec={id:eid||uid(),cliente:cli,tar,desde,hasta:hasta||'',notas};
+  await save('a',rec);closeM();showTab('agua');toast('GUARDADO ✓','ok');
+}
+function renderAgua(){
+  updFilter('FAC',DB.a);const fc=gF('FAC');
+  const rows=DB.a.filter(r=>!fc||r.cliente===fc).sort((a,b)=>b.desde>a.desde?1:-1);
+  const tb=document.getElementById('AT');
+  if(!rows.length){tb.innerHTML='<tr><td colspan="8"><div class="ES"><div class="EI">💧</div><p>SIN REGISTROS</p></div></td></tr>';return;}
+  tb.innerHTML=rows.map(r=>{
+    const{s}=cA(r);const ab=!r.hasta;const sel=SEL.a.has(r.id);
+    return`<tr><td><input type="checkbox" data-id="${r.id}" ${sel?'checked':''} onchange="togSel('a','${r.id}',this)"></td>
+    <td><b>${r.cliente}</b>${ab?'<br><span class="BS BA">ACTIVO</span>':''}</td>
+    <td style="white-space:nowrap">${fD(r.desde)}</td>
+    <td style="white-space:nowrap">${r.hasta?fD(r.hasta):'<span class="BS BA">ABIERTO</span>'}</td>
+    <td class="MO">${fmt(r.tar)}${r.tar!==TAGUA?'<span class="BS BA" style="margin-left:3px">ESP.</span>':''}</td>
+    <td class="MO VO">${s?fmt(s):'PENDIENTE'}</td>
+    <td style="font-size:10px">${r.notas||'—'}</td>
+    <td>${rowBtns('a',r.id,'openAgua')}</td></tr>`;
+  }).join('');
+}
+window.openAgua=openAgua;
+// ── BODEGAJE ──
+function openBodegaje(eid){
+  const r=eid?DB.b.find(x=>x.id===eid):null;
+  openM(`<div class="MT">📦 ${r?'EDITAR':'NUEVO'} BODEGAJE</div>
+  <div class="FG G2">
+    <div><label class="FL">CLIENTE *</label>${eS('fbc',r?.cliente)}</div>
+    <div><label class="FL">TARIFA POR DÍA (COP)</label><input class="FI" type="number" id="fbt" value="${r?.tar||0}"></div>
+    <div><label class="FL">FECHA DESDE (INGRESO) *</label><input class="FI" type="datetime-local" id="fbd" value="${r?.desde||now()}"></div>
+    <div><label class="FL">FECHA HASTA (SALIDA) — VACÍO SI AÚN ESTÁ</label><input class="FI" type="datetime-local" id="fbh" value="${r?.hasta||''}"></div>
+    <div style="grid-column:span 2"><label class="FL">MERCANCÍA *</label><textarea class="FI" id="fbm" oninput="this.value=this.value.toUpperCase()">${r?.merc||''}</textarea></div>
+    <div style="grid-column:span 2"><label class="FL">NOTAS</label><textarea class="FI" id="fbn" oninput="this.value=this.value.toUpperCase()">${r?.notas||''}</textarea></div>
+    <div style="grid-column:span 2"><label class="FL">📸 FOTO (OPCIONAL — EN CELULAR ABRE CÁMARA)</label>
+      <input type="file" id="fbf" accept="image/*" capture="environment" style="border:none;padding:3px 0;font-size:11px;width:100%">
+      ${r?.foto?`<img src="${r.foto}" style="width:90px;height:68px;object-fit:cover;border-radius:5px;margin-top:5px;cursor:pointer" onclick="vF('${r.id}')">`:''}</div>
+  </div>
+  <div class="MA"><button class="BN BS2" onclick="closeM()">CANCELAR</button><button class="BN BP" id="SBB">✓ GUARDAR</button></div>`);
+  document.getElementById('SBB').onclick=()=>saveBodegaje(eid||'');
+}
+window.vF=id=>{const r=DB.b.find(x=>x.id===id);if(!r?.foto)return;openM(`<div class="MT">📸 FOTO</div><img src="${r.foto}" style="width:100%;border-radius:7px;margin-bottom:10px"><div class="MA"><button class="BN BS2" onclick="closeM()">CERRAR</button></div>`);};
+function saveBodegaje(eid){
+  const cli=document.getElementById('fbc').value;
+  const tar=parseFloat(document.getElementById('fbt').value)||0;
+  const desde=document.getElementById('fbd').value;
+  const hasta=document.getElementById('fbh').value;
+  const merc=uc(document.getElementById('fbm').value.trim());
+  const notas=uc(document.getElementById('fbn').value);
+  if(!cli)return toast('SELECCIONA EL CLIENTE','er');
+  if(!merc)return toast('DESCRIBE LA MERCANCÍA','er');
+  if(!desde)return toast('SELECCIONA FECHA DESDE','er');
+  if(hasta&&new Date(hasta)<=new Date(desde))return toast('⚠️ FECHA HASTA DEBE SER POSTERIOR','wa');
+  if(!eid){const ab=DB.b.find(r=>r.cliente===cli&&!r.hasta);if(ab)return toast('⚠️ '+cli+' YA TIENE MERCANCÍA EN BODEGA','wa');}
+  const ff=document.getElementById('fbf')?.files[0];
+  const exF=eid?DB.b.find(x=>x.id===eid)?.foto||'':'';
+  const doS=async foto=>{
+    const rec={id:eid||uid(),cliente:cli,tar,desde,hasta:hasta||'',merc,notas,foto:foto||''};
+    await save('b',rec);closeM();showTab('bodegaje');toast('GUARDADO ✓','ok');
+  };
+  if(ff){const rd=new FileReader();rd.onload=e=>doS(e.target.result);rd.readAsDataURL(ff);}
+  else doS(exF);
+}
+function renderBodegaje(){
+  updFilter('FBC',DB.b);const fc=gF('FBC');
+  const rows=DB.b.filter(r=>!fc||r.cliente===fc).sort((a,b)=>b.desde>a.desde?1:-1);
+  const tb=document.getElementById('BT');
+  if(!rows.length){tb.innerHTML='<tr><td colspan="10"><div class="ES"><div class="EI">📦</div><p>SIN REGISTROS</p></div></td></tr>';return;}
+  tb.innerHTML=rows.map(r=>{
+    const{d,s}=cB(r);const ab=!r.hasta;const sel=SEL.b.has(r.id);
+    return`<tr><td><input type="checkbox" data-id="${r.id}" ${sel?'checked':''} onchange="togSel('b','${r.id}',this)"></td>
+    <td><b>${r.cliente}</b>${ab?'<br><span class="BS BT">EN BODEGA</span>':''}</td>
+    <td style="font-size:10px;max-width:120px">${r.merc||'—'}</td>
+    <td>${r.foto?`<img src="${r.foto}" style="width:60px;height:45px;object-fit:cover;border-radius:4px;cursor:pointer" onclick="vF('${r.id}')">`:'-'}</td>
+    <td style="white-space:nowrap">${fD(r.desde)}</td>
+    <td style="white-space:nowrap">${r.hasta?fD(r.hasta):'<span class="BS BA">ABIERTO</span>'}</td>
+    <td class="MO">${d}D</td><td class="MO">${r.tar?fmt(r.tar):'—'}</td>
+    <td class="MO VO">${s?fmt(s):'—'}</td>
+    <td>${rowBtns('b',r.id,'openBodegaje')}</td></tr>`;
+  }).join('');
+}
+window.openBodegaje=openBodegaje;
+// ── VEHÍCULOS ──
+function openVehiculo(eid){
+  const r=eid?DB.v.find(x=>x.id===eid):null;
+  const tO=VTYPES.map(t=>`<option value="${t.t}"${r?.tipo===t.t?' selected':''}>${t.t} — ${fmt(t.v)}</option>`).join('');
+  openM(`<div class="MT">🚗 ${r?'EDITAR':'NUEVO'} VEHÍCULO</div>
+  <div class="FG G2">
+    <div><label class="FL">CLIENTE *</label>${eS('fvc',r?.cliente)}</div>
+    <div><label class="FL">TIPO *</label><select class="FI" id="fvt" onchange="updVT()">${tO}</select></div>
+    <div><label class="FL">PLACA</label><input class="FI" type="text" id="fvp" placeholder="ABC-123" value="${r?.placa||''}" oninput="this.value=this.value.toUpperCase()"></div>
+    <div><label class="FL">VALOR (COP)</label><input class="FI" type="number" id="fvv" value="${r?.val??VTYPES[0].v}"><div class="FN">AUTO SEGÚN TIPO — EDITA PARA DESCUENTOS</div></div>
+    <div><label class="FL">MERCANCÍA QUE TRAE</label><input class="FI" type="text" id="fvm" value="${r?.merc||''}" oninput="this.value=this.value.toUpperCase()"></div>
+    <div><label class="FL">QUIEN AUTORIZA</label><input class="FI" type="text" id="fva" value="${r?.aut||''}" oninput="this.value=this.value.toUpperCase()"></div>
+    <div><label class="FL">FECHA Y HORA *</label><input class="FI" type="datetime-local" id="fvd" value="${r?.fecha||now()}"></div>
+    <div><label class="FL">NOTAS</label><textarea class="FI" id="fvn" oninput="this.value=this.value.toUpperCase()">${r?.notas||''}</textarea></div>
+  </div>
+  <div class="MA"><button class="BN BS2" onclick="closeM()">CANCELAR</button><button class="BN BP" id="SVB">✓ GUARDAR</button></div>`);
+  document.getElementById('SVB').onclick=()=>saveVehiculo(eid||'');
+  if(!r){const s=document.getElementById('fvt');const vv=document.getElementById('fvv');if(s&&vv){const t=VTYPES.find(x=>x.t===s.value);if(t)vv.value=t.v;}}
+}
+window.updVT=()=>{const s=document.getElementById('fvt');const vv=document.getElementById('fvv');if(s&&vv){const t=VTYPES.find(x=>x.t===s.value);if(t)vv.value=t.v;}};
+async function saveVehiculo(eid){
+  const cli=document.getElementById('fvc').value;
+  const tipo=document.getElementById('fvt').value;
+  const placa=uc(document.getElementById('fvp').value);
+  const val=parseFloat(document.getElementById('fvv').value)||0;
+  const merc=uc(document.getElementById('fvm').value);
+  const aut=uc(document.getElementById('fva').value);
+  const fecha=document.getElementById('fvd').value;
+  const notas=uc(document.getElementById('fvn').value);
+  if(!cli)return toast('SELECCIONA EL CLIENTE','er');
+  if(!fecha)return toast('SELECCIONA FECHA','er');
+  const rec={id:eid||uid(),cliente:cli,tipo,placa,val,merc,aut,fecha,notas};
+  await save('v',rec);closeM();showTab('vehiculos');toast('GUARDADO ✓','ok');
+}
+function renderVehiculos(){
+  updFilter('FVC',DB.v);const fc=gF('FVC');
+  const rows=DB.v.filter(r=>!fc||r.cliente===fc).sort((a,b)=>b.fecha>a.fecha?1:-1);
+  const tb=document.getElementById('VT');
+  if(!rows.length){tb.innerHTML='<tr><td colspan="9"><div class="ES"><div class="EI">🚗</div><p>SIN REGISTROS</p></div></td></tr>';return;}
+  tb.innerHTML=rows.map(r=>{const sel=SEL.v.has(r.id);return`<tr>
+    <td><input type="checkbox" data-id="${r.id}" ${sel?'checked':''} onchange="togSel('v','${r.id}',this)"></td>
+    <td><b>${r.cliente}</b></td><td><span class="BS BB">${r.tipo}</span></td>
+    <td class="MO" style="color:var(--amber)">${r.placa||'—'}</td>
+    <td style="font-size:10px">${r.merc||'—'}</td><td style="font-size:10px">${r.aut||'—'}</td>
+    <td style="white-space:nowrap">${fD(r.fecha)}</td>
+    <td class="MO VO">${r.val?fmt(r.val):'—'}</td>
+    <td>${rowBtns('v',r.id,'openVehiculo')}</td></tr>`;}).join('');
+}
+window.openVehiculo=openVehiculo;
+// ── PLAYA/ASTILLERO ──
+function openPlaya(eid){
+  const r=eid?DB.p.find(x=>x.id===eid):null;
+  openM(`<div class="MT">⚙️ ${r?'EDITAR':'NUEVO'} ASTILLERO</div>
+  <div class="FG G2">
+    <div><label class="FL">CLIENTE *</label>${eS('fpc',r?.cliente)}</div>
+    <div><label class="FL">TARIFA POR DÍA (COP)</label>
+      <input class="FI" type="number" id="fpt" value="${r?.tar??TPLAYA}">
+      <div class="FN">ESTÁNDAR: ${fmt(TPLAYA)}/DÍA</div>
+    </div>
+    <div><label class="FL">FECHA DESDE *</label><input class="FI" type="datetime-local" id="fpd" value="${r?.desde||now()}"></div>
+    <div><label class="FL">FECHA HASTA — VACÍO SI AÚN ESTÁ</label><input class="FI" type="datetime-local" id="fph" value="${r?.hasta||''}"></div>
+    <div style="grid-column:span 2"><label class="FL">NOTAS</label><textarea class="FI" id="fpn" oninput="this.value=this.value.toUpperCase()">${r?.notas||''}</textarea></div>
+  </div>
+  <div class="MA"><button class="BN BS2" onclick="closeM()">CANCELAR</button><button class="BN BP" id="SPB">✓ GUARDAR</button></div>`);
+  document.getElementById('SPB').onclick=()=>savePlaya(eid||'');
+}
+async function savePlaya(eid){
+  const cli=document.getElementById('fpc').value;
+  const tar=parseFloat(document.getElementById('fpt').value)||TPLAYA;
+  const desde=document.getElementById('fpd').value;
+  const hasta=document.getElementById('fph').value;
+  const notas=uc(document.getElementById('fpn').value);
+  if(!cli)return toast('SELECCIONA EL CLIENTE','er');
+  if(!desde)return toast('SELECCIONA FECHA DESDE','er');
+  if(hasta&&new Date(hasta)<=new Date(desde))return toast('⚠️ FECHA HASTA DEBE SER POSTERIOR','wa');
+  if(!eid){const ab=DB.p.find(r=>r.cliente===cli&&!r.hasta);if(ab)return toast('⚠️ '+cli+' YA TIENE ASTILLERO ACTIVO','wa');}
+  const rec={id:eid||uid(),cliente:cli,tar,desde,hasta:hasta||'',notas};
+  await save('p',rec);closeM();showTab('playa');toast('GUARDADO ✓','ok');
+}
+function renderPlaya(){
+  updFilter('FPC',DB.p);const fc=gF('FPC');
+  const rows=DB.p.filter(r=>!fc||r.cliente===fc).sort((a,b)=>b.desde>a.desde?1:-1);
+  const tb=document.getElementById('PT2');
+  if(!rows.length){tb.innerHTML='<tr><td colspan="9"><div class="ES"><div class="EI">⚙️</div><p>SIN REGISTROS</p></div></td></tr>';return;}
+  tb.innerHTML=rows.map(r=>{
+    const{d,s}=cP(r);const ab=!r.hasta;const sel=SEL.p.has(r.id);
+    return`<tr><td><input type="checkbox" data-id="${r.id}" ${sel?'checked':''} onchange="togSel('p','${r.id}',this)"></td>
+    <td><b>${r.cliente}</b>${ab?'<br><span class="BS BT">EN ASTILLERO</span>':''}</td>
+    <td style="white-space:nowrap">${fD(r.desde)}</td>
+    <td style="white-space:nowrap">${r.hasta?fD(r.hasta):'<span class="BS BA">ABIERTO</span>'}</td>
+    <td class="MO">${d}D</td><td class="MO">${r.tar?fmt(r.tar):'—'}</td>
+    <td class="MO VO">${s?fmt(s):'—'}</td>
+    <td style="font-size:10px">${r.notas||'—'}</td>
+    <td>${rowBtns('p',r.id,'openPlaya')}</td></tr>`;
+  }).join('');
+}
+window.openPlaya=openPlaya;
 // ── ARRIENDOS ──
-const calcArriendo=r=>{
-  if(!r.desde||!r.hasta)return{meses:0,sub:0};
-  const d=new Date(r.desde),h=new Date(r.hasta);
-  const meses=Math.round(((h-d)/(1000*60*60*24*30))*10)/10;
-  const sub=Math.round(meses*(r.valor||0)*10)/10+(r.energia||0);
-  return{meses:meses.toFixed(1),sub};
-};
-window.openArriendo=eid=>{
-  const r=eid?DB.arriendos.find(x=>x.id===eid):null;
-  openModal(`<div class="modal-title">🏢 ${r?'EDITAR':'NUEVO'} ARRIENDO</div>
-  <div class="form-grid g2">
-    <div class="field"><label>CLIENTE *</label>${embSel('far-cli',r?.cliente)}</div>
-    <div class="field"><label>TIPO</label><select id="far-tipo">
+function openArriendo(eid){
+  const r=eid?DB.ar.find(x=>x.id===eid):null;
+  openM(`<div class="MT">🏢 ${r?'EDITAR':'NUEVO'} ARRIENDO</div>
+  <div class="FG G2">
+    <div><label class="FL">CLIENTE *</label>${eS('farc',r?.cliente)}</div>
+    <div><label class="FL">TIPO</label><select class="FI" id="fart">
       <option value="BODEGA"${!r||r.tipo==='BODEGA'?' selected':''}>🏭 BODEGA</option>
       <option value="OFICINA"${r?.tipo==='OFICINA'?' selected':''}>🏢 OFICINA</option>
     </select></div>
-    <div class="field"><label>FECHA DESDE *</label><input type="datetime-local" id="far-desde" value="${r?.desde||nowStr()}"></div>
-    <div class="field"><label>FECHA HASTA *</label><input type="datetime-local" id="far-hasta" value="${r?.hasta||nowStr()}"></div>
-    <div class="field"><label>VALOR POR MES (COP)</label><input type="number" id="far-valor" value="${r?.valor||0}"></div>
-    <div class="field"><label>ENERGÍA A COBRAR (COP) — OPCIONAL</label>
-      <input type="number" id="far-energia" value="${r?.energia||0}">
-      <div class="field-note">INGRESA EL VALOR SI COBRA ENERGÍA APARTE</div>
-    </div>
-    <div class="field" style="grid-column:span 2"><label>NOTAS</label><textarea id="far-notas" oninput="upcase('far-notas')">${r?.notas||''}</textarea></div>
+    <div><label class="FL">FECHA DESDE *</label><input class="FI" type="datetime-local" id="fard" value="${r?.desde||now()}"></div>
+    <div><label class="FL">FECHA HASTA *</label><input class="FI" type="datetime-local" id="farh" value="${r?.hasta||now()}"></div>
+    <div><label class="FL">VALOR POR MES (COP)</label><input class="FI" type="number" id="farv" value="${r?.vlr||0}"></div>
+    <div><label class="FL">ENERGÍA APARTE (COP) — OPCIONAL</label><input class="FI" type="number" id="fare" value="${r?.ene||0}"></div>
+    <div style="grid-column:span 2"><label class="FL">NOTAS</label><textarea class="FI" id="farn" oninput="this.value=this.value.toUpperCase()">${r?.notas||''}</textarea></div>
   </div>
-  <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal()">CANCELAR</button><button class="btn btn-primary" onclick="saveArriendo('${eid||''}')">✓ GUARDAR</button></div>`);
-};
-window.saveArriendo=async eid=>{
-  const btn=document.querySelector('#modal-body .btn-primary');
-  if(btn){btn.disabled=true;btn.textContent='⏳ GUARDANDO...';}
-  const cli=document.getElementById('far-cli').value;
-  const tipo=document.getElementById('far-tipo').value;
-  const desde=document.getElementById('far-desde').value;
-  const hasta=document.getElementById('far-hasta').value;
-  const valor=parseFloat(document.getElementById('far-valor').value)||0;
-  const energia=parseFloat(document.getElementById('far-energia').value)||0;
-  const notas=uc(document.getElementById('far-notas').value);
-  const fail=m=>{toast(m,'warn');if(btn){btn.disabled=false;btn.textContent='✓ GUARDAR';}};
-  if(!cli)return fail('SELECCIONA EL CLIENTE');
-  if(!desde||!hasta)return fail('SELECCIONA FECHAS');
-  if(new Date(hasta)<=new Date(desde))return fail('⚠️ LA FECHA HASTA DEBE SER MAYOR A DESDE');
-  const rec={id:eid||genId(),cliente:cli,tipo,desde,hasta,valor,energia,notas};
-  fbSave('arriendos',rec);
-  closeModal();showTab('arriendos');toast('✓ GUARDADO CORRECTAMENTE','ok');
-};
+  <div class="MA"><button class="BN BS2" onclick="closeM()">CANCELAR</button><button class="BN BP" id="SARB">✓ GUARDAR</button></div>`);
+  document.getElementById('SARB').onclick=()=>saveArriendo(eid||'');
+}
+async function saveArriendo(eid){
+  const cli=document.getElementById('farc').value;
+  const tipo=document.getElementById('fart').value;
+  const desde=document.getElementById('fard').value;
+  const hasta=document.getElementById('farh').value;
+  const vlr=parseFloat(document.getElementById('farv').value)||0;
+  const ene=parseFloat(document.getElementById('fare').value)||0;
+  const notas=uc(document.getElementById('farn').value);
+  if(!cli)return toast('SELECCIONA EL CLIENTE','er');
+  if(!desde||!hasta)return toast('SELECCIONA FECHAS','er');
+  if(new Date(hasta)<=new Date(desde))return toast('⚠️ FECHA HASTA DEBE SER POSTERIOR','wa');
+  const rec={id:eid||uid(),cliente:cli,tipo,desde,hasta,vlr,ene,notas};
+  await save('ar',rec);closeM();showTab('arriendos');toast('GUARDADO ✓','ok');
+}
 function renderArriendos(){
-  updateFilterOptions('arriendos','ar',DB.arriendos||[]);
-  const fCli=getFilter('ar','cli');
-  const tb=document.getElementById('ar-tbody');
-  const rows=(DB.arriendos||[]).filter(r=>!fCli||r.cliente===fCli).sort((a,b)=>b.desde>a.desde?1:-1);
-  if(!rows.length){tb.innerHTML='<tr><td colspan="11"><div class="empty-state"><div class="ico">🏢</div><p>SIN REGISTROS</p></div></td></tr>';return;}
-  tb.innerHTML=rows.map(r=>{
-    const{meses,sub}=calcArriendo(r);const sel=SELECTED.arriendos.has(r.id);
-    return`<tr><td><input type="checkbox" data-id="${r.id}" ${sel?'checked':''} onchange="togSel('arriendos','${r.id}',this)"></td>
-    <td><b>${r.cliente}</b></td><td><span class="bs bg-blue">${r.tipo}</span></td>
-    <td style="white-space:nowrap">${fmtD(r.desde)}</td>
-    <td style="white-space:nowrap">${fmtD(r.hasta)}</td>
-    <td class="mono">${meses}M</td>
-    <td class="mono">${r.valor?fmt(r.valor):'<span class="muted">—</span>'}</td>
-    <td class="mono">${r.energia?fmt(r.energia):'<span class="muted">—</span>'}</td>
-    <td class="mono val-ok">${sub?fmt(sub):'<span class="muted">—</span>'}</td>
-    <td style="font-size:11px">${r.notas||'—'}</td>
-    <td><div class="btn-row"><button class="btn btn-sm btn-edit" onclick="openArriendo('${r.id}')">✏️</button>${isAdmin()?`<button class="btn btn-sm btn-del" onclick="delReg('arriendos','${r.id}')">✕</button>`:''}</div></td></tr>`;
-  }).join('');
+  updFilter('FARC',DB.ar);const fc=gF('FARC');
+  const rows=DB.ar.filter(r=>!fc||r.cliente===fc).sort((a,b)=>b.desde>a.desde?1:-1);
+  const tb=document.getElementById('ART');
+  if(!rows.length){tb.innerHTML='<tr><td colspan="11"><div class="ES"><div class="EI">🏢</div><p>SIN REGISTROS</p></div></td></tr>';return;}
+  tb.innerHTML=rows.map(r=>{const{m,s}=cAR(r);const sel=SEL.ar.has(r.id);return`<tr>
+    <td><input type="checkbox" data-id="${r.id}" ${sel?'checked':''} onchange="togSel('ar','${r.id}',this)"></td>
+    <td><b>${r.cliente}</b></td><td><span class="BS BB">${r.tipo}</span></td>
+    <td style="white-space:nowrap">${fD(r.desde)}</td><td style="white-space:nowrap">${fD(r.hasta)}</td>
+    <td class="MO">${m}M</td><td class="MO">${r.vlr?fmt(r.vlr):'—'}</td>
+    <td class="MO">${r.ene?fmt(r.ene):'—'}</td>
+    <td class="MO VO">${s?fmt(s):'—'}</td>
+    <td style="font-size:10px">${r.notas||'—'}</td>
+    <td>${rowBtns('ar',r.id,'openArriendo')}</td></tr>`;}).join('');
 }
-
-// ── ADMIN ──
-function renderAdmin(){
-  if(!isAdmin())return;
-  const sorted=[...CFG.embarcaciones].sort();
-  document.getElementById('adm-emb-tbody').innerHTML=sorted.map((e,i)=>{
-    const orig=CFG.embarcaciones.indexOf(e);
-    return`<tr><td class="muted">${i+1}</td><td><b>${e}</b></td>
-    <td><div class="btn-row">
-      <button class="btn btn-sm btn-edit" onclick="editEmb(${orig})">✏️</button>
-      <button class="btn btn-sm btn-del" onclick="delEmb(${orig})">✕</button>
-    </div></td></tr>`;
-  }).join('');
-  document.getElementById('adm-u-tbody').innerHTML=CFG.usuarios.map((u,i)=>`<tr><td><b>${u.name}</b></td><td><span class="bs ${u.rol==='admin'?'bg-amber':'bg-blue'}">${u.rol==='admin'?'ADMIN':'VIGILANTE'}</span></td><td class="muted">${u.rol==='admin'?'CON CLAVE':'SIN CLAVE'}</td><td><button class="btn btn-sm btn-del" onclick="delUser(${i})">✕</button></td></tr>`).join('');
-  // Tarifas table
-  const tarTb=document.getElementById('adm-tar-tbody');
-  if(tarTb){
-    const items=[
-      {key:'e110',label:'⚡ ENERGÍA 110V',unidad:'por hora'},
-      {key:'e220',label:'⚡ ENERGÍA 220V',unidad:'por hora'},
-      {key:'agua',label:'💧 AGUA',unidad:'por servicio'},
-      {key:'playa',label:'⚙️ ASTILLERO',unidad:'por día'},
-    ];
-    tarTb.innerHTML=items.map(it=>`<tr>
-      <td><b>${it.label}</b></td>
-      <td class="mono val-ok">${fmt(CFG.tarifas[it.key]||0)}</td>
-      <td class="muted">${it.unidad}</td>
-      <td><button class="btn btn-sm btn-edit" onclick="editTarifa('${it.key}','${it.label}')">✏️ EDITAR</button></td>
-    </tr>`).join('');
-  }
+window.openArriendo=openArriendo;
+// ── DASHBOARD ──
+function renderDash(){
+  document.getElementById('DA').textContent=DB.m.filter(r=>!r.hasta).length;
+  document.getElementById('DE').textContent=DB.e.filter(r=>!r.hasta).length;
+  document.getElementById('DB').textContent=DB.b.filter(r=>!r.hasta).length;
+  document.getElementById('DV').textContent=DB.v.filter(r=>new Date(r.fecha).toDateString()===new Date().toDateString()).length;
+  const tot=[...DB.m.map(r=>cM(r).s),...DB.e.map(r=>cE(r).s),...DB.a.map(r=>cA(r).s),...DB.b.map(r=>cB(r).s),...DB.v.map(r=>r.val||0),...DB.p.map(r=>cP(r).s),...DB.ar.map(r=>cAR(r).s)].reduce((a,b)=>a+b,0);
+  document.getElementById('DT').textContent='$'+tot.toLocaleString('es-CO');
+  document.getElementById('CM').textContent=DB.m.length;
+  document.getElementById('CE').textContent=DB.e.length;
+  document.getElementById('CA').textContent=DB.a.length;
+  document.getElementById('CB').textContent=DB.b.length;
+  document.getElementById('CV').textContent=DB.v.length;
+  document.getElementById('CP').textContent=DB.p.length;
+  document.getElementById('CAR').textContent=DB.ar.length;
+  let ev=[];
+  DB.m.forEach(r=>ev.push({mod:'⚓',cli:r.cliente,ev:r.hasta?'ZARPE':'ATRACADO',f:r.desde,u:r._u||''}));
+  DB.e.forEach(r=>ev.push({mod:'⚡',cli:r.cliente,ev:`${r.vol}V ${r.lin||''}`,f:r.desde,u:r._u||''}));
+  DB.a.forEach(r=>ev.push({mod:'💧',cli:r.cliente,ev:r.hasta?'COMPLETADO':'ACTIVO',f:r.desde,u:r._u||''}));
+  DB.b.forEach(r=>ev.push({mod:'📦',cli:r.cliente,ev:r.hasta?'SALIDA':'EN BODEGA',f:r.desde,u:r._u||''}));
+  DB.v.forEach(r=>ev.push({mod:'🚗',cli:r.cliente,ev:r.tipo,f:r.fecha,u:r._u||''}));
+  ev.sort((a,b)=>b.f>a.f?1:-1);
+  document.getElementById('DAT').innerHTML=ev.length?ev.slice(0,12).map(e=>`<tr><td>${e.mod}</td><td><b>${e.cli}</b></td><td>${e.ev}</td><td style="white-space:nowrap;font-size:10px">${fD(e.f)}</td><td style="font-size:10px;color:var(--muted)">${e.u}</td></tr>`).join(''):'<tr><td colspan="5"><div class="ES"><p>SIN ACTIVIDAD</p></div></td></tr>';
 }
-window.editTarifa=(key,label)=>{
-  openModal(`<div class="modal-title">💰 EDITAR TARIFA</div>
-  <div class="field"><label>${label}</label>
-    <input type="number" id="tar-val" value="${CFG.tarifas[key]||0}">
-    <div class="field-note">INGRESA EL NUEVO VALOR EN PESOS</div>
-  </div>
-  <div class="modal-actions">
-    <button class="btn btn-secondary" onclick="closeModal()">CANCELAR</button>
-    <button class="btn btn-primary" onclick="saveTarifa('${key}')">✓ GUARDAR</button>
-  </div>`);
-};
-window.saveTarifa=async key=>{
-  const val=parseFloat(document.getElementById('tar-val').value)||0;
-  CFG.tarifas[key]=val;
-  applyTarifas();
-  await fbSaveCfg();
-  closeModal();renderAll();toast('TARIFA ACTUALIZADA ✓','ok');
-};
-window.editEmb=i=>{
-  openModal(`<div class="modal-title">✏️ EDITAR CLIENTE</div>
-  <div class="field"><label>NOMBRE</label><input type="text" id="edit-emb-val" value="${CFG.embarcaciones[i]}" oninput="upcase('edit-emb-val')"></div>
-  <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal()">CANCELAR</button>
-  <button class="btn btn-primary" onclick="confEditEmb(${i})">✓ GUARDAR</button></div>`);
-};
-window.confEditEmb=async i=>{
-  const n=uc(document.getElementById('edit-emb-val').value.trim());
-  if(!n){toast('ESCRIBE EL NOMBRE','err');return;}
-  CFG.embarcaciones[i]=n;await fbSaveCfg();closeModal();renderAll();toast('ACTUALIZADO ✓','ok');
-};
-window.addEmb=async()=>{
-  const n=uc(document.getElementById('adm-emb').value.trim());
-  if(!n){toast('ESCRIBE EL NOMBRE','err');return;}
-  if(CFG.embarcaciones.includes(n)){toast('YA EXISTE','warn');return;}
-  CFG.embarcaciones.push(n);document.getElementById('adm-emb').value='';
-  await fbSaveCfg();renderAll();toast('EMBARCACIÓN AGREGADA ✓','ok');
-};
-window.delEmb=async i=>{
-  if(!confirm('¿ELIMINAR?'))return;
-  CFG.embarcaciones.splice(i,1);await fbSaveCfg();renderAll();
-};
-window.addUser=async()=>{
-  const name=uc(document.getElementById('adm-uname').value.trim());
-  const pass=document.getElementById('adm-upass').value;
-  const rol=document.getElementById('adm-urol').value;
-  if(!name){toast('ESCRIBE EL NOMBRE','err');return;}
-  if(rol==='admin'&&!pass){toast('EL ADMIN DEBE TENER CONTRASEÑA','err');return;}
-  CFG.usuarios.push({name,pass:rol==='admin'?pass:'',rol});
-  document.getElementById('adm-uname').value='';document.getElementById('adm-upass').value='';
-  await fbSaveCfg();renderAll();populateUsers();toast('USUARIO CREADO ✓','ok');
-};
-window.delUser=async i=>{
-  if(CFG.usuarios[i].rol==='admin'&&CFG.usuarios.filter(u=>u.rol==='admin').length===1){toast('NO PUEDES ELIMINAR EL ÚNICO ADMIN','err');return;}
-  if(!confirm('¿ELIMINAR?'))return;
-  CFG.usuarios.splice(i,1);await fbSaveCfg();renderAll();populateUsers();
-};
-
-// ── UPDATED CALCULA FACTURA ──
-window.calcFactura=()=>{
-  const cli=document.getElementById('f-cli').value;
-  const per=document.getElementById('f-per').value;
-  const incM=document.getElementById('fc-m').checked,incE=document.getElementById('fc-e').checked;
-  const incA=document.getElementById('fc-a').checked,incB=document.getElementById('fc-b').checked;
-  const incV=document.getElementById('fc-v').checked;
-  const incP=document.getElementById('fc-p').checked,incAR=document.getElementById('fc-ar').checked;
+// ── FACTURA ──
+function renderFactCli(){
+  const s=document.getElementById('FCL');if(!s)return;const c=s.value;
+  const cs=new Set([...CFG.embs,...Object.values(DB).flatMap(a=>a.map(r=>r.cliente||'')).filter(Boolean)]);
+  s.innerHTML='<option value="">— TODOS —</option>';
+  [...cs].sort().forEach(x=>s.innerHTML+=`<option value="${x}"${x===c?' selected':''}>${x}</option>`);
+}
+function calcFactura(){
+  const cli=document.getElementById('FCL').value;
+  const per=document.getElementById('FPR').value;
   const n=new Date();
-  const inP=d=>{const dt=new Date(d);if(per==='hoy')return dt.toDateString()===n.toDateString();if(per==='semana')return(n-dt)<=7*86400000;if(per==='mes')return(n-dt)<=30*86400000;return true;};
+  const inP=d=>{if(!d)return false;const dt=new Date(d);if(per==='hoy')return dt.toDateString()===n.toDateString();if(per==='semana')return(n-dt)<=7*86400000;if(per==='mes')return(n-dt)<=30*86400000;return true;};
   const f=a=>a.filter(r=>(!cli||r.cliente===cli)&&inP(r.desde||r.fecha));
   let lines=[],grand=0;
-  const add=(lbl,arr,fn,tab,inc)=>{if(!inc)return;let s=0,ids=[];f(arr).forEach(r=>{const v=fn(r);s+=v;if(v>0)ids.push(r.id);});if(s>0){lines.push({lbl,val:s,tab,ids});grand+=s;}};
-  add('⚓ MUELLAJE',DB.muellaje,r=>calcMuellaje(r).sub,'muellaje',incM);
-  add('⚡ ENERGÍA',DB.energia,r=>calcEnergia(r).sub,'energia',incE);
-  add('💧 AGUA',DB.agua,r=>calcAgua(r).sub,'agua',incA);
-  add('📦 BODEGAJE',DB.bodegaje,r=>calcBodegaje(r).sub,'bodegaje',incB);
-  add('🚗 VEHÍCULOS',DB.vehiculos,r=>r.valor||0,'vehiculos',incV);
-  add('⚙️ ASTILLERO',DB.playa||[],r=>calcPlaya(r).sub,'playa',incP);
-  add('🏢 ARRIENDOS',DB.arriendos||[],r=>calcArriendo(r).sub,'arriendos',incAR);
-  const out=document.getElementById('factura-out');
-  if(!lines.length){out.innerHTML='<div class="empty-state"><p>SIN MOVIMIENTOS PARA EL PERÍODO</p></div>';return;}
-  const allIds=lines.flatMap(l=>l.ids.map(id=>l.tab+':'+id));
-  out.innerHTML=`<div class="factura-panel">
-    <div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:10px">
-      CLIENTE: <span style="color:var(--text)">${cli||'TODOS'}</span> | PERÍODO: <span style="color:var(--text)">${per.toUpperCase()}</span>
-    </div>
-    ${lines.map(l=>`<div class="frow"><span>${l.lbl}</span><span class="mono">${fmt(l.val)}</span></div>`).join('')}
-    <div class="frow" style="margin-top:8px;padding-top:8px;border-top:2px solid var(--teal);font-weight:700">
-      <span style="font-size:12px">TOTAL A FACTURAR</span><span class="ftotal">${fmt(grand)}</span>
-    </div>
-    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn btn-pdf" onclick="generarPDF('${cli}','${per}',${incM},${incE},${incA},${incB},${incV},${incP},${incAR})">📄 CUENTA DE COBRO</button>
-      <button class="btn btn-primary" style="background:var(--red)" onclick="factYElim(${JSON.stringify(allIds)})">🧾 FACTURADO — ELIMINAR</button>
+  const add=(lbl,arr,fn,k,inc)=>{if(!inc)return;let s=0,ids=[];f(arr).forEach(r=>{const vv=fn(r);s+=vv;if(vv>0)ids.push(r.id);});if(s>0){lines.push({lbl,val:s,k,ids});grand+=s;}};
+  add('⚓ MUELLAJE',DB.m,r=>cM(r).s,'m',document.getElementById('FCM').checked);
+  add('⚡ ENERGÍA',DB.e,r=>cE(r).s,'e',document.getElementById('FCE').checked);
+  add('💧 AGUA',DB.a,r=>cA(r).s,'a',document.getElementById('FCA').checked);
+  add('📦 BODEGAJE',DB.b,r=>cB(r).s,'b',document.getElementById('FCB').checked);
+  add('🚗 VEHÍCULOS',DB.v,r=>r.val||0,'v',document.getElementById('FCV').checked);
+  add('⚙️ ASTILLERO',DB.p,r=>cP(r).s,'p',document.getElementById('FCP').checked);
+  add('🏢 ARRIENDOS',DB.ar,r=>cAR(r).s,'ar',document.getElementById('FCAR').checked);
+  const out=document.getElementById('FO');
+  if(!lines.length){out.innerHTML='<div class="ES"><p>SIN MOVIMIENTOS</p></div>';return;}
+  const allIds=lines.flatMap(l=>l.ids.map(id=>l.k+':'+id));
+  const incM=document.getElementById('FCM').checked,incE=document.getElementById('FCE').checked,incA=document.getElementById('FCA').checked,incB=document.getElementById('FCB').checked,incV=document.getElementById('FCV').checked,incP=document.getElementById('FCP').checked,incAR=document.getElementById('FCAR').checked;
+  out.innerHTML=`<div class="FP">
+    <div style="font-size:9px;font-weight:700;color:var(--muted);margin-bottom:8px">CLIENTE: <b style="color:var(--text)">${cli||'TODOS'}</b> | PERÍODO: <b style="color:var(--text)">${per.toUpperCase()}</b></div>
+    ${lines.map(l=>`<div class="FW"><span>${l.lbl}</span><span class="MO">${fmt(l.val)}</span></div>`).join('')}
+    <div class="FW" style="margin-top:8px;padding-top:8px;border-top:2px solid var(--teal);font-weight:700"><span>TOTAL A FACTURAR</span><span class="FT">${fmt(grand)}</span></div>
+    <div style="margin-top:10px;display:flex;gap:7px;flex-wrap:wrap">
+      <button class="BN BP" style="background:#7C3AED" id="BPDF">📄 CUENTA DE COBRO</button>
+      <button class="BN BP" style="background:var(--red)" id="BFAC">🧾 FACTURADO — ELIMINAR</button>
     </div>
   </div>`;
-};
-
-// ── UPDATED PDF to include playa and arriendos ──
-window.generarPDF=(cli,per,incM,incE,incA,incB,incV,incP,incAR)=>{
-  const n=new Date();
-  const inP=d=>{const dt=new Date(d);if(per==='hoy')return dt.toDateString()===n.toDateString();if(per==='semana')return(n-dt)<=7*86400000;if(per==='mes')return(n-dt)<=30*86400000;return true;};
-  const f=a=>a.filter(r=>(!cli||r.cliente===cli)&&inP(r.desde||r.fecha));
-  const mRows=incM?f(DB.muellaje):[];
-  let mT=0;const mL=mRows.map(r=>{const{dias,sub}=calcMuellaje(r);mT+=sub;return{desc:`ATRAQUE: ${fmtDF(r.desde)}${r.hasta?' — ZARPE: '+fmtDF(r.hasta):' — EN MUELLE'}`,cant:`${dias} DÍAS`,u:r.tarifa,t:sub,notas:r.notas};});
-  const eRows=incE?f(DB.energia).filter(r=>r.hasta):[];
-  let eT=0;const eL=eRows.map(r=>{const{horas,sub}=calcEnergia(r);eT+=sub;return{desc:`ENERGÍA ${r.volt}V ${r.linea&&r.volt==='110'?r.linea:''} — DESDE: ${fmtDF(r.desde)} HASTA: ${fmtDF(r.hasta)}`,cant:`${horas||'0'} HORAS`,u:r.tarifa,t:sub,notas:r.notas};});
-  const aRows=incA?f(DB.agua).filter(r=>r.hasta):[];
-  let aT=0;const aL=aRows.map(r=>{const{sub,descFecha}=calcAgua(r);aT+=sub;return{desc:`AGUA — SERVICIO: ${fmtDF(r.fecha)}${descFecha?' — CIERRE: '+fmtDF(descFecha):''}`,cant:'1 SERVICIO',u:r.tarifa,t:sub,notas:r.notas};});
-  const vRows=incV?f(DB.vehiculos):[];
-  let vT=0;const vL=vRows.map(r=>{vT+=r.valor||0;return{desc:`${r.tipo}${r.placa?' — PLACA: '+r.placa:''}${r.mercancia?' — '+r.mercancia:''}${r.autoriza?' — AUTORIZA: '+r.autoriza:''} — FECHA: ${fmtDF(r.fecha)}`,cant:'1',u:r.valor,t:r.valor||0,notas:r.notas};});
-  const bRows=incB?f(DB.bodegaje):[];
-  let bT=0;const bL=bRows.map(r=>{const{dias,sub}=calcBodegaje(r);bT+=sub;return{desc:`BODEGA: ${r.mercancia} — DESDE: ${fmtDF(r.desde)}${r.hasta?' HASTA: '+fmtDF(r.hasta):''}`,cant:`${dias} DÍAS`,u:r.tarifa,t:sub,notas:r.notas};});
-  const pRows=incP?(DB.playa||[]).filter(r=>(!cli||r.cliente===cli)&&inP(r.desde||r.fecha)):[];
-  let pT=0;const pL=pRows.map(r=>{const{dias,sub}=calcPlaya(r);pT+=sub;return{desc:`ASTILLERO — DESDE: ${fmtDF(r.desde)}${r.hasta?' HASTA: '+fmtDF(r.hasta):''}`,cant:`${dias} DÍAS`,u:r.tarifa,t:sub,notas:r.notas};});
-  const arRows=incAR?(DB.arriendos||[]).filter(r=>(!cli||r.cliente===cli)&&inP(r.desde)):[];
-  let arT=0;const arL=arRows.map(r=>{const{meses,sub}=calcArriendo(r);arT+=sub;return{desc:`${r.tipo} — DESDE: ${fmtDF(r.desde)} HASTA: ${fmtDF(r.hasta)}${r.energia?' — ENERGÍA: '+fmt(r.energia):''}`,cant:`${meses} MESES`,u:r.valor,t:sub,notas:r.notas};});
-  const grand=mT+eT+aT+vT+bT+pT+arT;
-  const fechaDoc=new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'long',year:'numeric'}).toUpperCase();
+  document.getElementById('BPDF').onclick=()=>genPDF(cli,per,f,incM,incE,incA,incB,incV,incP,incAR);
+  document.getElementById('BFAC').onclick=()=>{
+    openM(`<div class="MT" style="color:var(--amber)">🧾 CONFIRMAR FACTURACIÓN</div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:14px">SE ELIMINARÁN <b>${allIds.length} REGISTROS</b>. NO SE PUEDE DESHACER.</p>
+    <div class="MA"><button class="BN BS2" onclick="closeM()">CANCELAR</button><button class="BN BP" style="background:var(--red)" id="CFB">CONFIRMAR</button></div>`);
+    document.getElementById('CFB').onclick=async()=>{for(const ref of allIds){const[k,id]=ref.split(':');await del(k,id);}closeM();document.getElementById('FO').innerHTML='<div class="ES"><p>✓ FACTURACIÓN COMPLETADA</p></div>';toast('COMPLETADO ✓','ok');};
+  };
+}
+// ── PDF ──
+function genPDF(cli,per,f,incM,incE,incA,incB,incV,incP,incAR){
+  const fd=new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'long',year:'numeric'}).toUpperCase();
   const sec=(tit,rows)=>{
     if(!rows.length)return'';
-    return`<div class="pdf-sec-title">${tit}</div>
-    <table class="pdf-table"><thead><tr>
-      <th>DESCRIPCIÓN</th><th style="text-align:center;white-space:nowrap">CANT.</th>
-      <th style="text-align:right;white-space:nowrap">VR. UNIT.</th><th style="text-align:right;white-space:nowrap">VR. TOTAL</th>
-    </tr></thead>
-    <tbody>${rows.map(r=>`
-      <tr><td>${r.desc}</td><td style="text-align:center;white-space:nowrap">${r.cant}</td><td style="text-align:right;white-space:nowrap">${fmt(r.u)}</td><td style="text-align:right;white-space:nowrap;font-weight:700">${fmt(r.t)}</td></tr>
-      ${r.notas?`<tr><td colspan="4" style="font-size:9px;color:#666;padding:2px 8px 5px;font-style:italic">NOTA: ${r.notas}</td></tr>`:''}`).join('')}
-    </tbody>
-    <tfoot><tr><td colspan="3" style="text-align:right;font-weight:700">SUBTOTAL</td><td style="text-align:right;font-weight:700">${fmt(rows.reduce((a,r)=>a+r.t,0))}</td></tr></tfoot></table>`;
+    return`<div class="PST">${tit}</div>
+    <table class="PT"><thead><tr><th>DESCRIPCIÓN</th><th style="text-align:center">CANT.</th><th style="text-align:right">VR.UNIT.</th><th style="text-align:right">VR.TOTAL</th></tr></thead>
+    <tbody>${rows.map(r=>`<tr><td>${r.d}</td><td style="text-align:center">${r.c}</td><td style="text-align:right">${fmt(r.u)}</td><td style="text-align:right;font-weight:700">${fmt(r.t)}</td></tr>${r.n?`<tr><td colspan="4" style="font-size:8px;color:#666;font-style:italic">NOTA: ${r.n}</td></tr>`:''}`).join('')}</tbody>
+    <tfoot><tr><td colspan="3" style="text-align:right">SUBTOTAL</td><td style="text-align:right">${fmt(rows.reduce((a,r)=>a+r.t,0))}</td></tr></tfoot></table>`;
   };
-  document.getElementById('pdf-render').innerHTML=`
-  <div class="pdf-header">
-    <div><div class="pdf-logo">⚓ SERVIBUQUES</div></div>
-    <div style="text-align:right"><div class="pdf-tipo">CUENTA DE COBRO</div><div style="font-size:10px;color:#666;margin-top:3px">${fechaDoc}</div></div>
-  </div>
-  <div class="pdf-client-box">
-    <div><div class="lbl">CLIENTE / EMBARCACIÓN</div><div class="val">${cli||'TODOS'}</div></div>
-    <div><div class="lbl">CIUDAD</div><div class="val">BUENAVENTURA</div></div>
-  </div>
-  ${sec('⚓ MUELLAJE',mL)}${sec('💧 SERVICIO DE AGUA',aL)}${sec('⚡ SERVICIO DE ENERGÍA',eL)}
-  ${sec('🚗 VEHÍCULOS',vL)}${sec('📦 BODEGAJE',bL)}${sec('⚙️ SERVICIO DE ASTILLERO',pL)}${sec('🏢 ARRIENDOS',arL)}
-  <div class="pdf-grand"><span>TOTAL A PAGAR</span><span>${fmt(grand)}</span></div>`;
-  document.getElementById('pdf-area').style.display='block';
+  const mRows=incM?f(DB.m).map(r=>{const{d,s}=cM(r);return{d:`ATRAQUE: ${fDF(r.desde)}${r.hasta?' — ZARPE: '+fDF(r.hasta):' — EN MUELLE'}`,c:d+'D',u:r.tar,t:s,n:r.notas};}).filter(r=>r.t>0):[];
+  const eRows=incE?f(DB.e).filter(r=>r.hasta).map(r=>{const{h,s}=cE(r);return{d:`ENERGÍA ${r.vol}V${r.vol==='110'?' '+r.lin:''} — ${fDF(r.desde)} AL ${fDF(r.hasta)}`,c:h+'H',u:r.tar,t:s,n:r.notas};}).filter(r=>r.t>0):[];
+  const aRows=incA?f(DB.a).filter(r=>r.hasta).map(r=>{const{s}=cA(r);return{d:`AGUA — ${fDF(r.desde)} AL ${fDF(r.hasta)}${r.notas?' — '+r.notas:''}`,c:'1 SERVICIO',u:r.tar,t:s,n:''};}).filter(r=>r.t>0):[];
+  const vRows=incV?f(DB.v).map(r=>({d:`${r.tipo}${r.placa?' — '+r.placa:''}${r.merc?' — '+r.merc:''}${r.aut?' — AUTORIZA: '+r.aut:''} — ${fDF(r.fecha)}`,c:'1',u:r.val,t:r.val||0,n:r.notas})).filter(r=>r.t>0):[];
+  const bRows=incB?f(DB.b).map(r=>{const{d,s}=cB(r);return{d:`BODEGA: ${r.merc} — ${fDF(r.desde)}${r.hasta?' AL '+fDF(r.hasta):''}`,c:d+'D',u:r.tar,t:s,n:r.notas};}).filter(r=>r.t>0):[];
+  const pRows=incP?f(DB.p).map(r=>{const{d,s}=cP(r);return{d:`ASTILLERO — ${fDF(r.desde)}${r.hasta?' AL '+fDF(r.hasta):''}`,c:d+'D',u:r.tar,t:s,n:r.notas};}).filter(r=>r.t>0):[];
+  const arRows=incAR?f(DB.ar).map(r=>{const{m,s}=cAR(r);return{d:`${r.tipo} — ${fDF(r.desde)} AL ${fDF(r.hasta)}${r.ene?' — ENERGÍA: '+fmt(r.ene):''}`,c:m+'M',u:r.vlr,t:s,n:r.notas};}).filter(r=>r.t>0):[];
+  const grand=[...mRows,...eRows,...aRows,...vRows,...bRows,...pRows,...arRows].reduce((a,r)=>a+r.t,0);
+  document.getElementById('PR').innerHTML=`
+  <div class="PH"><div><div class="PLO">⚓ SERVIBUQUES</div></div><div style="text-align:right"><div class="PTP">CUENTA DE COBRO</div><div style="font-size:9px;color:#666;margin-top:2px">${fd}</div></div></div>
+  <div class="PCB"><div><div class="pl">CLIENTE / EMBARCACIÓN</div><div class="pv">${cli||'TODOS'}</div></div><div><div class="pl">CIUDAD</div><div class="pv">BUENAVENTURA</div></div></div>
+  ${sec('⚓ MUELLAJE',mRows)}${sec('💧 SERVICIO DE AGUA',aRows)}${sec('⚡ SERVICIO DE ENERGÍA',eRows)}${sec('🚗 VEHÍCULOS',vRows)}${sec('📦 BODEGAJE',bRows)}${sec('⚙️ ASTILLERO',pRows)}${sec('🏢 ARRIENDOS',arRows)}
+  <div class="PG"><span>TOTAL A PAGAR</span><span>${fmt(grand)}</span></div>`;
+  document.getElementById('PA').style.display='block';
   document.body.style.overflow='hidden';
-  document.getElementById('pdf-msg').textContent='';
-};
-
-// ── PDF CLOSE & SHARE ──
-function closePDF(){
-  document.getElementById('pdf-area').style.display='none';
-  document.body.style.overflow='';
 }
-async function compartirPDF(){
-  const btn=document.getElementById('btn-wa');
-  const msg=document.getElementById('pdf-msg');
-  const el=document.getElementById('pdf-render');
-  if(!btn||!el)return;
-  btn.textContent='⏳ GENERANDO...';btn.disabled=true;
-  if(msg)msg.textContent='CONVIRTIENDO A IMAGEN...';
+document.getElementById('BCP').addEventListener('click',()=>{document.getElementById('PA').style.display='none';document.body.style.overflow='';});
+document.getElementById('BWP').addEventListener('click',async()=>{
+  const btn=document.getElementById('BWP');const msg=document.getElementById('PM');
+  const el=document.getElementById('PR');
+  btn.textContent='⏳...';btn.disabled=true;if(msg)msg.textContent='GENERANDO...';
   try{
-    const canvas=await html2canvas(el,{scale:2,backgroundColor:'#ffffff',useCORS:true,logging:false,width:el.scrollWidth,height:el.scrollHeight,windowWidth:el.scrollWidth});
+    const canvas=await html2canvas(el,{scale:2,backgroundColor:'#fff',useCORS:true,logging:false});
     canvas.toBlob(async blob=>{
-      if(!blob){throw new Error('Sin imagen');}
       const file=new File([blob],'servibuques-cuenta.png',{type:'image/png'});
       if(navigator.canShare&&navigator.canShare({files:[file]})){
-        try{
-          await navigator.share({files:[file],title:'CUENTA DE COBRO — SERVIBUQUES'});
-          if(msg)msg.textContent='✓ COMPARTIDO';
-        }catch(e){
-          if(e.name!=='AbortError'){descargarImg(canvas);if(msg)msg.textContent='IMAGEN DESCARGADA — ADJÚNTALA EN WHATSAPP';}
-        }
-      }else{
-        descargarImg(canvas);
-        setTimeout(()=>window.open('https://wa.me/','_blank'),800);
-        if(msg)msg.textContent='IMAGEN DESCARGADA — ADJÚNTALA EN WHATSAPP';
-      }
-      btn.textContent='📲 ENVIAR A WHATSAPP';btn.disabled=false;
+        try{await navigator.share({files:[file],title:'CUENTA DE COBRO'});if(msg)msg.textContent='✓';}
+        catch(e){if(e.name!=='AbortError'){const a=document.createElement('a');a.download='servibuques-cuenta.png';a.href=canvas.toDataURL();a.click();setTimeout(()=>window.open('https://wa.me/','_blank'),500);if(msg)msg.textContent='DESCARGADA';}}
+      }else{const a=document.createElement('a');a.download='servibuques-cuenta.png';a.href=canvas.toDataURL();a.click();setTimeout(()=>window.open('https://wa.me/','_blank'),500);if(msg)msg.textContent='DESCARGADA';}
+      btn.textContent='📲 ENVIAR WHATSAPP';btn.disabled=false;
     },'image/png',0.95);
-  }catch(e){
-    btn.textContent='📲 ENVIAR A WHATSAPP';btn.disabled=false;
-    if(msg)msg.textContent='ERROR: '+e.message;
-  }
+  }catch(e){btn.textContent='📲 ENVIAR WHATSAPP';btn.disabled=false;if(msg)msg.textContent='ERROR';}
+});
+// ── ADMIN ──
+function renderAdmin(){
+  if(!isA())return;
+  // Clientes
+  const sorted=[...CFG.embs].sort();
+  document.getElementById('AET').innerHTML=sorted.length?sorted.map((e,i)=>{
+    const orig=CFG.embs.indexOf(e);
+    return`<tr><td class="MU">${i+1}</td><td><b>${e}</b></td>
+    <td><div class="BR2"><button class="BN BNS BE" onclick="editEmb(${orig})">✏️</button><button class="BN BNS BD" onclick="delEmb(${orig})">✕</button></div></td></tr>`;
+  }).join(''):'<tr><td colspan="3"><div class="ES"><p>SIN CLIENTES — AGREGUE UNO ARRIBA</p></div></td></tr>';
+  // Usuarios
+  document.getElementById('AUT').innerHTML=CFG.users.map((u,i)=>`<tr><td><b>${u.name}</b></td><td><span class="BS ${u.rol==='admin'?'BA':'BB'}">${u.rol==='admin'?'ADMIN':'VIGILANTE'}</span></td><td class="MU">${u.rol==='admin'?'CON CLAVE':'SIN CLAVE'}</td><td><button class="BN BNS BD" onclick="delUser(${i})">✕</button></td></tr>`).join('');
+  // Tarifas
+  const tItems=[{k:'e110',lbl:'⚡ ENERGÍA 110V',un:'por hora'},{k:'e220',lbl:'⚡ ENERGÍA 220V',un:'por hora'},{k:'agua',lbl:'💧 AGUA',un:'por servicio'},{k:'playa',lbl:'⚙️ ASTILLERO',un:'por día'}];
+  document.getElementById('ATT').innerHTML=tItems.map(it=>`<tr><td><b>${it.lbl}</b></td><td class="MO VO">${fmt(CFG.tar[it.k]||0)}</td><td class="MU">${it.un}</td><td><button class="BN BNS BE" onclick="editTar('${it.k}','${it.lbl}')">✏️ EDITAR</button></td></tr>`).join('');
 }
-function descargarImg(canvas){
-  const a=document.createElement('a');
-  a.download='servibuques-cuenta.png';
-  a.href=canvas.toDataURL('image/png');
-  a.click();
-}
-
-// Wire PDF buttons via event listeners (required for ES modules)
-document.getElementById('btn-close-pdf').addEventListener('click',closePDF);
-document.getElementById('btn-wa').addEventListener('click',compartirPDF);
-
-// ── EXPORTAR A EXCEL ──
-window.exportarExcel=()=>{
+window.editEmb=i=>{
+  openM(`<div class="MT">✏️ EDITAR CLIENTE</div>
+  <div><label class="FL">NOMBRE</label><input class="FI" type="text" id="EEV" value="${CFG.embs[i]}" oninput="this.value=this.value.toUpperCase()"></div>
+  <div class="MA"><button class="BN BS2" onclick="closeM()">CANCELAR</button><button class="BN BP" id="EEB">✓ GUARDAR</button></div>`);
+  document.getElementById('EEB').onclick=async()=>{const n=uc(document.getElementById('EEV').value.trim());if(!n)return toast('ESCRIBE EL NOMBRE','er');CFG.embs[i]=n;await saveCFG();closeM();render();toast('ACTUALIZADO ✓','ok');};
+};
+window.delEmb=async i=>{if(!confirm('¿ELIMINAR CLIENTE?'))return;CFG.embs.splice(i,1);await saveCFG();render();};
+window.editTar=(k,lbl)=>{
+  openM(`<div class="MT">💰 EDITAR TARIFA</div>
+  <div><label class="FL">${lbl}</label><input class="FI" type="number" id="ETV" value="${CFG.tar[k]||0}"><div class="FN">INGRESA EL NUEVO VALOR EN PESOS</div></div>
+  <div class="MA"><button class="BN BS2" onclick="closeM()">CANCELAR</button><button class="BN BP" id="ETB">✓ GUARDAR</button></div>`);
+  document.getElementById('ETB').onclick=async()=>{const v=parseFloat(document.getElementById('ETV').value)||0;CFG.tar[k]=v;applyTar();await saveCFG();closeM();render();toast('TARIFA ACTUALIZADA ✓','ok');};
+};
+// ── EXCEL EXPORT ──
+function exportExcel(){
   try{
     const wb=XLSX.utils.book_new();
-    // Muellaje
-    const mData=[['CLIENTE','FECHA DESDE','FECHA HASTA','DÍAS','TARIFA/DÍA','SUBTOTAL','NOTAS']];
-    DB.muellaje.filter(r=>!r._isClosingRecord).forEach(r=>{
-      const{dias,sub}=calcMuellaje(r);
-      mData.push([r.cliente,r.desde||'',r.hasta||'EN MUELLE',dias||'',r.tarifa||0,sub||0,r.notas||'']);
-    });
-    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(mData),'MUELLAJE');
-    // Energía
-    const eData=[['CLIENTE','VOLTAJE','LÍNEA','FECHA DESDE','FECHA HASTA','TARIFA/H','HORAS','SUBTOTAL','NOTAS']];
-    DB.energia.filter(r=>!r._isClosingRecord).forEach(r=>{
-      const{horas,sub}=calcEnergia(r);
-      eData.push([r.cliente,r.volt||'',r.linea||'',r.desde||'',r.hasta||'ACTIVO',r.tarifa||0,horas||'',sub||0,r.notas||'']);
-    });
-    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(eData),'ENERGÍA');
-    // Agua
-    const aData=[['CLIENTE','FECHA DESDE','FECHA HASTA','TARIFA','SUBTOTAL','NOTAS']];
-    DB.agua.filter(r=>!r._isClosingRecord).forEach(r=>{
-      const{sub}=calcAgua(r);
-      aData.push([r.cliente,r.desde||'',r.hasta||'ACTIVO',r.tarifa||0,sub||0,r.notas||'']);
-    });
-    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(aData),'AGUA');
-    // Bodegaje
-    const bData=[['CLIENTE','MERCANCÍA','FECHA DESDE','FECHA HASTA','DÍAS','TARIFA/DÍA','SUBTOTAL','NOTAS']];
-    DB.bodegaje.filter(r=>!r._isClosingRecord).forEach(r=>{
-      const{dias,sub}=calcBodegaje(r);
-      bData.push([r.cliente,r.mercancia||'',r.desde||'',r.hasta||'EN BODEGA',dias||'',r.tarifa||0,sub||0,r.notas||'']);
-    });
-    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(bData),'BODEGAJE');
-    // Vehículos
-    const vData=[['CLIENTE','TIPO','PLACA','MERCANCÍA','AUTORIZA','FECHA','VALOR','NOTAS']];
-    DB.vehiculos.forEach(r=>{
-      vData.push([r.cliente,r.tipo||'',r.placa||'',r.mercancia||'',r.autoriza||'',r.fecha||'',r.valor||0,r.notas||'']);
-    });
-    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(vData),'VEHÍCULOS');
-    // Astillero
-    const pData=[['CLIENTE','FECHA DESDE','FECHA HASTA','DÍAS','TARIFA/DÍA','SUBTOTAL','NOTAS']];
-    (DB.playa||[]).filter(r=>!r._isClosingRecord).forEach(r=>{
-      const{dias,sub}=calcPlaya(r);
-      pData.push([r.cliente,r.desde||'',r.hasta||'EN ASTILLERO',dias||'',r.tarifa||0,sub||0,r.notas||'']);
-    });
-    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(pData),'ASTILLERO');
-    // Arriendos
-    const arData=[['CLIENTE','TIPO','DESDE','HASTA','MESES','VALOR/MES','ENERGÍA','SUBTOTAL','NOTAS']];
-    (DB.arriendos||[]).forEach(r=>{
-      const{meses,sub}=calcArriendo(r);
-      arData.push([r.cliente,r.tipo||'',r.desde||'',r.hasta||'',meses||'',r.valor||0,r.energia||0,sub||0,r.notas||'']);
-    });
-    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(arData),'ARRIENDOS');
-    // Save
-    const fecha=new Date().toLocaleDateString('es-CO').replace(/\//g,'-');
-    XLSX.writeFile(wb,`SERVIBUQUES_BACKUP_${fecha}.xlsx`);
-    toast('✓ EXCEL DESCARGADO','ok');
-  }catch(e){toast('ERROR AL EXPORTAR: '+e.message,'err');}
-};
-function renderFacturaClients(){
-  const s=document.getElementById('f-cli');
-  if(!s)return;
-  const cur=s.value;
-  const cs=new Set();
-  CFG.embarcaciones.forEach(e=>cs.add(e));
-  Object.values(DB).forEach(a=>Array.isArray(a)&&a.forEach(r=>r.cliente&&cs.add(r.cliente)));
-  s.innerHTML='<option value="">— TODOS —</option>';
-  [...cs].sort().forEach(c=>s.innerHTML+=`<option value="${c}"${c===cur?' selected':''}>${c}</option>`);
+    const sh=(name,cols,rows)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([cols,...rows]),name);
+    sh('MUELLAJE',['CLIENTE','DESDE','HASTA','DÍAS','TARIFA','SUBTOTAL','NOTAS'],DB.m.map(r=>{const{d,s}=cM(r);return[r.cliente,r.desde,r.hasta||'ABIERTO',d,r.tar,s,r.notas||''];}));
+    sh('ENERGÍA',['CLIENTE','VOLTAJE','LÍNEA','DESDE','HASTA','TARIFA/H','HORAS','SUBTOTAL','NOTAS'],DB.e.map(r=>{const{h,s}=cE(r);return[r.cliente,r.vol,r.lin,r.desde,r.hasta||'ACTIVO',r.tar,h,s,r.notas||''];}));
+    sh('AGUA',['CLIENTE','DESDE','HASTA','TARIFA','SUBTOTAL','NOTAS'],DB.a.map(r=>{const{s}=cA(r);return[r.cliente,r.desde,r.hasta||'ACTIVO',r.tar,s,r.notas||''];}));
+    sh('BODEGAJE',['CLIENTE','MERCANCÍA','DESDE','HASTA','DÍAS','TARIFA','SUBTOTAL','NOTAS'],DB.b.map(r=>{const{d,s}=cB(r);return[r.cliente,r.merc,r.desde,r.hasta||'EN BODEGA',d,r.tar,s,r.notas||''];}));
+    sh('VEHÍCULOS',['CLIENTE','TIPO','PLACA','MERCANCÍA','AUTORIZA','FECHA','VALOR','NOTAS'],DB.v.map(r=>[r.cliente,r.tipo,r.placa,r.merc,r.aut,r.fecha,r.val,r.notas||'']));
+    sh('ASTILLERO',['CLIENTE','DESDE','HASTA','DÍAS','TARIFA','SUBTOTAL','NOTAS'],DB.p.map(r=>{const{d,s}=cP(r);return[r.cliente,r.desde,r.hasta||'ACTIVO',d,r.tar,s,r.notas||''];}));
+    sh('ARRIENDOS',['CLIENTE','TIPO','DESDE','HASTA','MESES','VLR/MES','ENERGÍA','SUBTOTAL','NOTAS'],DB.ar.map(r=>{const{m,s}=cAR(r);return[r.cliente,r.tipo,r.desde,r.hasta,m,r.vlr,r.ene,s,r.notas||''];}));
+    XLSX.writeFile(wb,'SERVIBUQUES_'+new Date().toLocaleDateString('es-CO').replace(/\//g,'-')+'.xlsx');
+    toast('EXCEL DESCARGADO ✓','ok');
+  }catch(e){toast('ERROR: '+e.message,'er');}
 }
-
 // ── RENDER ALL ──
-function renderAll(){
-  renderDashboard();renderMuellaje();renderEnergia();renderAgua();
-  renderBodegaje();renderVehiculos();renderPlaya();renderArriendos();
-  renderFacturaClients();renderAdmin();
+function render(){
+  renderDash();renderMuellaje();renderEnergia();renderAgua();renderBodegaje();renderVehiculos();renderPlaya();renderArriendos();renderFactCli();renderAdmin();
 }
-
-// ── BACK BUTTON — prevent exit from PWA ──
-history.pushState(null,'',location.href);
-window.addEventListener('popstate',()=>{
-  history.pushState(null,'',location.href);
-  // Go back to dashboard if on a sub-tab, otherwise stay
-  const activeTab=document.querySelector('.tab.active');
-  if(activeTab&&activeTab.getAttribute('onclick')!=="showTab('dashboard')"){
-    showTab('dashboard');
-  }
-});
-
+// ── BUTTON WIRING ──
+function wireButtons(){
+  actBtn('NM',()=>openMuellaje(''));
+  actBtn('NE',()=>openEnergia(''));
+  actBtn('NA',()=>openAgua(''));
+  actBtn('NB',()=>openBodegaje(''));
+  actBtn('NV',()=>openVehiculo(''));
+  actBtn('NP',()=>openPlaya(''));
+  actBtn('NAR',()=>openArriendo(''));
+  actBtn('BFC',calcFactura);
+  actBtn('BXL',exportExcel);
+  actBtn('BAE',async()=>{
+    const n=uc(document.getElementById('AEN').value.trim());
+    if(!n)return toast('ESCRIBE EL NOMBRE','er');
+    if(CFG.embs.map(e=>e.trim().toUpperCase()).includes(n))return toast('YA EXISTE: '+n,'wa');
+    CFG.embs.push(n);document.getElementById('AEN').value='';
+    await saveCFG();render();toast('CLIENTE AGREGADO: '+n,'ok');
+  });
+  actBtn('BAU',async()=>{
+    const name=uc(document.getElementById('AUN').value.trim());
+    const pass=document.getElementById('AUP').value;
+    const rol=document.getElementById('AUR').value;
+    if(!name)return toast('ESCRIBE EL NOMBRE','er');
+    if(rol==='admin'&&!pass)return toast('EL ADMIN DEBE TENER CLAVE','er');
+    CFG.users.push({name,pass:rol==='admin'?pass:'',rol});
+    document.getElementById('AUN').value='';document.getElementById('AUP').value='';
+    await saveCFG();render();populateUsers();toast('USUARIO CREADO ✓','ok');
+  });
+  actBtn('BLO',doLogout);
+  actBtn('LBI',doLogin);
+  // Bulk buttons
+  actBtn('BMD',()=>bulkDel('m','M'));actBtn('BMC',()=>{SEL.m.clear();updBulk('m','M');render();});
+  actBtn('BED',()=>bulkDel('e','E'));actBtn('BEC',()=>{SEL.e.clear();updBulk('e','E');render();});
+  actBtn('BAD',()=>bulkDel('a','A'));actBtn('BAC',()=>{SEL.a.clear();updBulk('a','A');render();});
+  actBtn('BBD',()=>bulkDel('b','B'));actBtn('BBC',()=>{SEL.b.clear();updBulk('b','B');render();});
+  actBtn('BVD',()=>bulkDel('v','V'));actBtn('BVC',()=>{SEL.v.clear();updBulk('v','V');render();});
+  actBtn('BPD',()=>bulkDel('p','P'));actBtn('BPC',()=>{SEL.p.clear();updBulk('p','P2');render();});
+  actBtn('BARD',()=>bulkDel('ar','AR'));actBtn('BARC',()=>{SEL.ar.clear();updBulk('ar','AR');render();});
+  // Select all checkboxes
+  actBtn('SAM',cb=>selAll('m','M',document.getElementById('SAM')));
+  actBtn('SAE',cb=>selAll('e','E',document.getElementById('SAE')));
+  actBtn('SAA',cb=>selAll('a','A',document.getElementById('SAA')));
+  actBtn('SAB',cb=>selAll('b','B',document.getElementById('SAB')));
+  actBtn('SAV',cb=>selAll('v','V',document.getElementById('SAV')));
+  actBtn('SAP',cb=>selAll('p','P',document.getElementById('SAP')));
+  actBtn('SAAR',cb=>selAll('ar','AR',document.getElementById('SAAR')));
+  document.getElementById('SAM')?.addEventListener('change',e=>selAll('m','M',e.target));
+  document.getElementById('SAE')?.addEventListener('change',e=>selAll('e','E',e.target));
+  document.getElementById('SAA')?.addEventListener('change',e=>selAll('a','A',e.target));
+  document.getElementById('SAB')?.addEventListener('change',e=>selAll('b','B',e.target));
+  document.getElementById('SAV')?.addEventListener('change',e=>selAll('v','V',e.target));
+  document.getElementById('SAP')?.addEventListener('change',e=>selAll('p','P',e.target));
+  document.getElementById('SAAR')?.addEventListener('change',e=>selAll('ar','AR',e.target));
+  // Filters
+  document.getElementById('FMC')?.addEventListener('change',renderMuellaje);
+  document.getElementById('FEC')?.addEventListener('change',renderEnergia);
+  document.getElementById('FAC')?.addEventListener('change',renderAgua);
+  document.getElementById('FBC')?.addEventListener('change',renderBodegaje);
+  document.getElementById('FVC')?.addEventListener('change',renderVehiculos);
+  document.getElementById('FPC')?.addEventListener('change',renderPlaya);
+  document.getElementById('FARC')?.addEventListener('change',renderArriendos);
+  document.getElementById('LP')?.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+}
+// ── AUTH ──
+function populateUsers(){
+  const s=document.getElementById('LU');
+  s.innerHTML='<option value="">— SELECCIONAR —</option>';
+  CFG.users.forEach((u,i)=>s.innerHTML+=`<option value="${i}">${u.name}</option>`);
+  s.onchange=()=>{const idx=s.value;const pw=document.getElementById('LPW');pw.style.display=(idx===''||CFG.users[+idx]?.rol==='admin')?'block':'none';};
+}
+function doLogin(){
+  const idx=document.getElementById('LU').value;
+  const pass=document.getElementById('LP').value;
+  const err=document.getElementById('LBE');
+  if(!idx){err.textContent='SELECCIONA UN USUARIO';return;}
+  const u=CFG.users[+idx];
+  if(u.rol==='admin'&&u.pass!==pass){err.textContent='CONTRASEÑA INCORRECTA';return;}
+  CU=u;err.textContent='';document.getElementById('LP').value='';
+  document.getElementById('LS').style.display='none';
+  document.getElementById('HN').textContent=u.name;
+  document.getElementById('HR').innerHTML=u.rol==='admin'?'<span class="RB RA">ADMIN</span>':'<span class="RB RV">VIGILANTE</span>';
+  if(u.rol==='admin'){document.querySelectorAll('.AON').forEach(el=>el.style.display='flex');}
+  startListeners();render();toast('BIENVENIDO, '+u.name,'ok');
+}
+function doLogout(){CU=null;UNSUBS.forEach(u=>u());UNSUBS=[];document.getElementById('LS').style.display='flex';document.querySelectorAll('.AON').forEach(el=>el.style.display='none');populateUsers();showTab('dashboard');}
+// ── LISTENERS ──
+function startListeners(){
+  UNSUBS.forEach(u=>u());UNSUBS=[];
+  const COLS={m:'m',e:'e',a:'a',b:'b',v:'v',p:'p',ar:'ar'};
+  Object.entries(COLS).forEach(([k,col])=>{
+    const u=onSnapshot(collection(db,col),snap=>{DB[k]=snap.docs.map(d=>d.data());render();sync(true);},err=>{sync(false);console.error(col,err);});
+    UNSUBS.push(u);
+  });
+  const uCfg=onSnapshot(collection(db,'_cfg'),snap=>{
+    snap.docs.forEach(d=>{
+      if(d.id==='embs'&&d.data().v)CFG.embs=d.data().v;
+      if(d.id==='users'&&d.data().v&&d.data().v.length>0)CFG.users=d.data().v;
+      if(d.id==='tar'&&d.data().v){CFG.tar={...CFG.tar,...d.data().v};applyTar();}
+    });
+    populateUsers();render();
+  });
+  UNSUBS.push(uCfg);
+}
 // ── PWA MANIFEST ──
-const manifest={name:'SERVIBUQUES',short_name:'SERVIBUQUES',start_url:'./',display:'standalone',background_color:'#1E3A5F',theme_color:'#1E3A5F',orientation:'portrait',icons:[{src:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%231E3A5F"/><text y="75" x="10" font-size="75">⚓</text></svg>',sizes:'512x512',type:'image/svg+xml'}]};
-const blob=new Blob([JSON.stringify(manifest)],{type:'application/json'});
-document.getElementById('pwa-manifest').href=URL.createObjectURL(blob);
-
+const mf={name:'SERVIBUQUES',short_name:'SERVIBUQUES',start_url:'./',display:'standalone',background_color:'#1E3A5F',theme_color:'#1E3A5F',orientation:'portrait',icons:[{src:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%231E3A5F"/><text y="75" x="10" font-size="75">⚓</text></svg>',sizes:'512x512',type:'image/svg+xml'}]};
+const bl=new Blob([JSON.stringify(mf)],{type:'application/json'});
+document.getElementById('pwa-manifest').href=URL.createObjectURL(bl);
+// Back button
+history.pushState(null,'',location.href);
+window.addEventListener('popstate',()=>{history.pushState(null,'',location.href);showTab('dashboard');});
 // ── INIT ──
-document.getElementById('login-sync-status').textContent='● CONECTADO A FIREBASE';
-document.getElementById('login-sync-status').style.color='#22C55E';
-populateUsers();setSynced();
-
+wireButtons();
+document.getElementById('LST').textContent='● CONECTANDO...';
 (async()=>{
   try{
-    // Load config from Firebase
-    const embDoc=await getDoc(doc(db,'_config','embarcaciones'));
-    if(embDoc.exists()&&embDoc.data().lista&&embDoc.data().lista.length>0){
-      CFG.embarcaciones=embDoc.data().lista;
-    } else {
-      await setDoc(doc(db,'_config','embarcaciones'),{lista:CFG.embarcaciones});
-    }
-    const usrDoc=await getDoc(doc(db,'_config','usuarios'));
-    if(usrDoc.exists()&&usrDoc.data().lista&&usrDoc.data().lista.length>0){
-      CFG.usuarios=usrDoc.data().lista;
-    } else {
-      await setDoc(doc(db,'_config','usuarios'),{lista:CFG.usuarios});
-    }
-    const tarDoc=await getDoc(doc(db,'_config','tarifas'));
-    if(tarDoc.exists()&&tarDoc.data().data){CFG.tarifas={...CFG.tarifas,...tarDoc.data().data};applyTarifas();}
+    const eD=await getDoc(doc(db,'_cfg','embs'));
+    if(eD.exists()&&eD.data().v)CFG.embs=eD.data().v;else await setDoc(doc(db,'_cfg','embs'),{v:CFG.embs});
+    const uD=await getDoc(doc(db,'_cfg','users'));
+    if(uD.exists()&&uD.data().v&&uD.data().v.length>0)CFG.users=uD.data().v;else await setDoc(doc(db,'_cfg','users'),{v:CFG.users});
+    const tD=await getDoc(doc(db,'_cfg','tar'));
+    if(tD.exists()&&tD.data().v){CFG.tar={...CFG.tar,...tD.data().v};applyTar();}
     populateUsers();
-  }catch(e){console.warn('offline init',e);setOffline();}
+    document.getElementById('LST').textContent='● CONECTADO ✓';
+    document.getElementById('LST').style.color='#22C55E';
+    sync(true);
+  }catch(ex){
+    document.getElementById('LST').textContent='● SIN CONEXIÓN';
+    document.getElementById('LST').style.color='#DC2626';
+    sync(false);
+  }
 })();
+window.togSel=togSel;
+window.dR=dR;
+window.vF=window.vF;
+window.editEmb=window.editEmb;
+window.delEmb=window.delEmb;
+window.editTar=window.editTar;
+window.delUser=async i=>{if(CFG.users[i].rol==='admin'&&CFG.users.filter(u=>u.rol==='admin').length===1)return toast('NO PUEDES ELIMINAR EL ÚNICO ADMIN','er');if(!confirm('¿ELIMINAR?'))return;CFG.users.splice(i,1);await saveCFG();render();populateUsers();};
+window.closeM=closeM;
 </script>
 </body>
 </html>
