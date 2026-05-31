@@ -1259,7 +1259,7 @@ function buildIngreso(r){
     <div class="CPT">COMPROBANTE DE INGRESO</div>
   </div>
   <div class="CPF"><table>
-    <tr><td>CIUDAD Y FECHA</td><td style="color:#000;font-weight:600">BUENAVENTURA, ${fDF(r.fecha)}</td></tr>
+    <tr><td>CIUDAD Y FECHA</td><td style="color:#000;font-weight:600">BUENAVENTURA, ${fDate(r.fecha)}</td></tr>
     <tr><td>RECIBIDO DE</td><td style="color:#000;font-weight:600;display:flex;justify-content:space-between;align-items:center">${r.de||''} <span style="border:1.5px solid #1a7a3a;padding:2px 10px;font-size:13px;font-weight:700">$ ${Number(r.valor||0).toLocaleString('es-CO')}</span></td></tr>
     <tr><td>DIRECCIÓN</td><td style="color:#000;font-weight:600">${r.dir||'SERVIBUQUES'}</td></tr>
     <tr><td>LA SUMA DE (EN LETRAS)</td><td style="color:#000;font-weight:600;font-size:11px">${letras}</td></tr>
@@ -1285,7 +1285,7 @@ function buildEgreso(r){
     <div class="CPT" style="color:#1a7a3a;border-color:#1a7a3a">COMPROBANTE DE EGRESO</div>
   </div>
   <div class="CPF"><table>
-    <tr><td>CIUDAD Y FECHA</td><td style="color:#000;font-weight:600;display:flex;justify-content:space-between">BUENAVENTURA, ${fDF(r.fecha)} <span style="border:1.5px solid #1a7a3a;padding:2px 10px;font-size:13px;font-weight:700">$ ${Number(r.valor||0).toLocaleString('es-CO')}</span></td></tr>
+    <tr><td>CIUDAD Y FECHA</td><td style="color:#000;font-weight:600;display:flex;justify-content:space-between">BUENAVENTURA, ${fDate(r.fecha)} <span style="border:1.5px solid #1a7a3a;padding:2px 10px;font-size:13px;font-weight:700">$ ${Number(r.valor||0).toLocaleString('es-CO')}</span></td></tr>
     <tr><td>PAGADO A</td><td style="color:#000;font-weight:600">${r.de||''}</td></tr>
     <tr><td>POR CONCEPTO DE</td><td style="color:#000;font-weight:600">${r.concepto||''}</td></tr>
     <tr><td>LA SUMA DE (EN LETRAS)</td><td style="color:#000;font-weight:600;font-size:11px">${letras}</td></tr>
@@ -1304,26 +1304,79 @@ function buildEgreso(r){
   </div>`;
 }
 
+
+
+async function saveIngreso(eid){
+  // Auto-number
+  if(!eid){const nums=DB.ci.map(r=>parseInt(r.num)||0);const maxN=nums.length?Math.max(...nums):1000;document.getElementById('cin').value=String(maxN+1);}
+  const num=document.getElementById('cin').value;
+  const fecha=document.getElementById('cif').value;
+  const de=document.getElementById('cid').value;
+  const dir=uc(document.getElementById('cidir')?.value)||'SERVIBUQUES';
+  const efectivo=document.getElementById('ciefect').value==='1';
+  const notas=uc(document.getElementById('cino')?.value||'');
+  // Read items
+  const items=[];let totalVal=0;
+  const ciconcs=document.getElementById('ciconcs');
+  if(ciconcs){
+    ciconcs.querySelectorAll('div.ci-row').forEach(row=>{
+      const sel=row.querySelector('select.ci-sel');
+      const desc=row.querySelector('input.ci-desc');
+      const valI=row.querySelector('input.ci-val');
+      if(!sel)return;
+      const c=sel.value==='OTRO'?uc(desc?.value||''):sel.value;
+      const d=uc(desc?.value||'');
+      const v=parseFloat(valI?.value)||0;
+      if(c){items.push({c,desc:d,val:v});totalVal+=v;}
+    });
+  }
+  const concepto=items.map(it=>it.c+(it.desc?' — '+it.desc:'')).join(' • ');
+  const valor=totalVal>0?totalVal:0;
+  if(!fecha)return toast('SELECCIONA FECHA','er');
+  if(!de)return toast('SELECCIONA CLIENTE','er');
+  if(!concepto)return toast('AGREGA AL MENOS UN CONCEPTO','er');
+  const rec={id:eid||uid(),num,fecha,de,valor,dir,efectivo,concepto,items,notas,tipo:'ingreso'};
+  await save('ci',rec);
+  closeM();
+  cpOpen(buildIngreso(rec));
+  toast('GUARDADO ✓','ok');
+}
 function openIngreso(eid){
   const r=eid?DB.ci.find(x=>x.id===eid):null;
-  const cOpts=CONCEPTOS.map(c=>`<option value="${c}"${r?.concepto===c?' selected':''}>${c}</option>`).join('');
+  const autoNum=DB.ci.length?(Math.max(...DB.ci.map(x=>parseInt(x.num)||0))+1):1001;
   const eOpts=CFG.embs.slice().sort().map(e=>`<option value="${e}"${r?.de===e?' selected':''}>${e}</option>`).join('');
+  const existItems=r?.items&&r.items.length>0?r.items:[{c:r?.concepto||'',desc:'',val:r?.valor||0}];
   openM(`<div class="MT">📋 ${r?'EDITAR':'NUEVO'} COMPROBANTE DE INGRESO</div>
   <div class="FG G2">
-    <div><label class="FL">No. COMPROBANTE</label><input class="FI" type="text" id="cin" value="${r?.num||''}"></div>
-    <div><label class="FL">FECHA Y HORA *</label><input class="FI" type="datetime-local" id="cif" value="${r?.fecha||now()}"></div>
+    <div><label class="FL">No. COMPROBANTE (AUTO)</label><input class="FI" type="text" id="cin" value="${r?.num||autoNum}"></div>
+    <div><label class="FL">FECHA *</label><input class="FI" type="date" id="cif" value="${r?.fecha||new Date().toISOString().slice(0,10)}"></div>
     <div><label class="FL">RECIBIDO DE *</label><select class="FI" id="cid"><option value="">— SELECCIONAR —</option>${eOpts}</select></div>
-    <div><label class="FL">VALOR (COP) *</label><input class="FI" type="number" id="civ" value="${r?.valor||''}" oninput="updLetras('civ','civl')">
-      <div class="FN" id="civl" style="color:var(--navy);font-size:9px">${r?.valor?valLetras(r.valor):''}</div>
-    </div>
     <div><label class="FL">DIRECCIÓN</label><input class="FI" type="text" id="cidir" value="${r?.dir||'SERVIBUQUES'}" oninput="this.value=this.value.toUpperCase()"></div>
     <div><label class="FL">¿EFECTIVO?</label><select class="FI" id="ciefect">
       <option value="1" ${r?.efectivo?'selected':''}>SÍ — EFECTIVO</option>
       <option value="0" ${!r?.efectivo?'selected':''}>NO — OTRO MEDIO</option>
     </select></div>
-    <div style="grid-column:span 2"><label class="FL">CONCEPTO *</label>
-      <select class="FI" id="cic" onchange="updConc('cic','cicot')"><option value="">— SELECCIONAR —</option>${cOpts}<option value="OTRO">OTRO (ESCRIBIR)</option></select>
-      <input class="FI" type="text" id="cicot" placeholder="ESCRIBE EL CONCEPTO..." style="margin-top:6px;display:${r?.concepto&&!CONCEPTOS.includes(r.concepto)?'block':'none'}" value="${r?.concepto&&!CONCEPTOS.includes(r.concepto)?r.concepto:''}" oninput="this.value=this.value.toUpperCase()">
+    <div></div>
+    <div style="grid-column:span 2">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <label class="FL" style="margin:0">CONCEPTOS Y VALORES *</label>
+        <button type="button" class="BN BNS BP" onclick="addConcRow('ciconcs')">+ AGREGAR</button>
+      </div>
+      <div style="border:1.5px solid var(--border);border-radius:6px;overflow:hidden" id="ciconcs">
+        <div style="display:grid;grid-template-columns:1fr 1fr 110px 32px;gap:4px;padding:5px 7px;background:#F1F5F9;font-size:9px;font-weight:700;color:var(--muted)">
+          <span>CONCEPTO</span><span>DESCRIPCIÓN</span><span style="text-align:right">VALOR $</span><span></span>
+        </div>
+        ${existItems.map(it=>`
+        <div class="ci-row" style="display:grid;grid-template-columns:1fr 1fr 110px 32px;gap:4px;padding:5px 7px;border-top:1px solid var(--border)">
+          <select class="FI ci-sel" style="font-size:11px" onchange="updConcRow(this)"><option value="">—</option>${CONCEPTOS.map(x=>`<option value="${x}"${it.c===x?' selected':''}>${x}</option>`).join('')}<option value="OTRO" ${it.c&&!CONCEPTOS.includes(it.c)?'selected':''}>OTRO</option></select>
+          <input class="FI ci-desc" type="text" style="font-size:11px" placeholder="DETALLE..." value="${it.desc||''}" oninput="this.value=this.value.toUpperCase()">
+          <input class="FI ci-val" type="number" style="font-size:11px;text-align:right" value="${it.val||0}" oninput="updTotalCI()">
+          <button type="button" class="BN BNS BD" onclick="this.closest('div').remove();updTotalCI()" style="padding:3px 6px">✕</button>
+        </div>`).join('')}
+      </div>
+      <div style="text-align:right;padding:6px 7px;font-weight:700;font-size:12px;background:#F0FDF4;border-radius:0 0 6px 6px;border:1.5px solid var(--border);border-top:none">
+        TOTAL: <span id="ciTotal" style="color:var(--green)">${fmt(r?.valor||0)}</span>
+      </div>
     </div>
     <div style="grid-column:span 2"><label class="FL">NOTAS</label><textarea class="FI" id="cino" oninput="this.value=this.value.toUpperCase()">${r?.notas||''}</textarea></div>
   </div>
@@ -1331,40 +1384,9 @@ function openIngreso(eid){
   document.getElementById('CISB').onclick=()=>saveIngreso(eid||'');
 }
 
-async function saveIngreso(eid){
-  const num=document.getElementById('cin').value;
-  const fecha=document.getElementById('cif').value;
-  const de=document.getElementById('cid').value;
-  const valor=parseFloat(document.getElementById('civ').value)||0;
-  const dir=uc(document.getElementById('cidir').value)||'SERVIBUQUES';
-  const efectivo=document.getElementById('ciefect').value==='1';
-  // Read items grid
-  const items=[];let totalVal=0;
-  document.getElementById('ciconcs')?.querySelectorAll('div[style*="grid-template-columns"]').forEach(row=>{
-    const inputs=row.querySelectorAll('select,input');
-    if(inputs.length<3)return;
-    const sel=inputs[0];const desc=inputs[1];const valI=inputs[2];
-    if(!sel||sel.tagName!=='SELECT')return;
-    const c=sel.value==='OTRO'?uc(desc?.value||''):sel.value;
-    const d=sel.value!=='OTRO'?uc(desc?.value||''):'';
-    const v=parseFloat(valI?.value)||0;
-    if(c){items.push({c,desc:d,val:v});totalVal+=v;}
-  });
-  const concepto=items.map(it=>it.c+(it.desc?' - '+it.desc:'')).join(' • ');
-  const conceptos=items;
-  // Use sum of items as valor if items present
-  const valor2=items.length>0?totalVal:(parseFloat(document.getElementById('civ').value)||0);
-  const notas=uc(document.getElementById('cino').value);
-  if(!fecha)return toast('SELECCIONA FECHA','er');
-  if(!de)return toast('SELECCIONA CLIENTE','er');
-  if(!valor)return toast('INGRESA EL VALOR','er');
-  if(!concepto)return toast('SELECCIONA EL CONCEPTO','er');
-  const rec={id:eid||uid(),num,fecha,de,valor,dir,efectivo,concepto,notas,tipo:'ingreso'};
-  await save('ci',rec);
-  closeM();
-  cpOpen(buildIngreso(rec));
-  toast('GUARDADO ✓','ok');
-}
+
+
+
 
 function openEgreso(eid){
   const r=eid?DB.ce.find(x=>x.id===eid):null;
