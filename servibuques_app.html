@@ -1633,13 +1633,26 @@ history.pushState(null,'',location.href);
 window.addEventListener('popstate',()=>{history.pushState(null,'',location.href);showTab('dashboard');});
 // ── INIT ──
 wireButtons();
+populateUsers();
 document.getElementById('LST').textContent='● CONECTANDO...';
+document.getElementById('LST').style.color='#94A3B8';
+
 (async()=>{
   try{
-    const eD=await getDoc(doc(db,'_cfg','embs'));
-    if(eD.exists()&&eD.data().v)CFG.embs=eD.data().v;else await setDoc(doc(db,'_cfg','embs'),{v:CFG.embs});
+    // 8 second timeout so login is never blocked
+    const timeout=new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),8000));
+    const eD=await Promise.race([getDoc(doc(db,'_cfg','embs')),timeout]);
+    if(eD.exists()&&eD.data().v&&eD.data().v.length>0){
+      CFG.embs=eD.data().v;
+    } else {
+      try{await setDoc(doc(db,'_cfg','embs'),{v:CFG.embs});}catch(e){}
+    }
     const uD=await getDoc(doc(db,'_cfg','users'));
-    if(uD.exists()&&uD.data().v&&uD.data().v.length>0)CFG.users=uD.data().v;else await setDoc(doc(db,'_cfg','users'),{v:CFG.users});
+    if(uD.exists()&&uD.data().v&&uD.data().v.length>0){
+      CFG.users=uD.data().v;
+    } else {
+      try{await setDoc(doc(db,'_cfg','users'),{v:CFG.users});}catch(e){}
+    }
     const tD=await getDoc(doc(db,'_cfg','tar'));
     if(tD.exists()&&tD.data().v){CFG.tar={...CFG.tar,...tD.data().v};applyTar();}
     populateUsers();
@@ -1647,8 +1660,10 @@ document.getElementById('LST').textContent='● CONECTANDO...';
     document.getElementById('LST').style.color='#22C55E';
     sync(true);
   }catch(ex){
-    document.getElementById('LST').textContent='● SIN CONEXIÓN';
-    document.getElementById('LST').style.color='#DC2626';
+    console.warn('Firebase init:',ex.message);
+    populateUsers();
+    document.getElementById('LST').textContent=ex.message==='timeout'?'● CONECTANDO EN SEGUNDO PLANO...':'● SIN CONEXIÓN — REINTENTE';
+    document.getElementById('LST').style.color='#D97706';
     sync(false);
   }
 })();
